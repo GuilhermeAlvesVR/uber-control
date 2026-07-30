@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: uber-control
+    runtime: python
+    repo: https://github.com/SEU_USUARIO/SEU_REPO
+    plan: free
+    region: ohio
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: uber-control-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12"
+
+databases:
+  - name: uber-control-db
+    databaseName: uber_control
+    user: uber
+    plan: free
