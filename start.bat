@@ -13,4 +13,5 @@ cd ..
 echo.
 echo Backend: http://localhost:8000
 echo Frontend: http://localhost:5173
-echo.echo.
+echo.
+echo Deploy automatico OK
