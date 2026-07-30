@@ -7,6 +7,16 @@
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: -webkit-fill-available;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
+input, select, textarea, button {
+  font-size: 16px;
 }
 
 @keyframes slide-in {
@@ -19,7 +29,7 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
   background: #09090b;
