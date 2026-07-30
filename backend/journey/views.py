@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from .models import Journey
 from .serializers import JourneyStartSerializer, JourneyEndSerializer, JourneySerializer
+from finances.models import Transaction
 
 User = get_user_model()
 
@@ -56,12 +57,19 @@ class ResumeJourneyView(views.APIView):
         return Response(JourneySerializer(journey).data)
 
 class CancelJourneyView(views.APIView):
-    def post(self, request, pk):
-        journey = Journey.objects.filter(pk=pk, is_active=True, user=_get_user(request)).first()
+    def delete(self, request, pk):
+        journey = Journey.objects.filter(pk=pk, user=_get_user(request)).first()
         if not journey:
             return Response({'error': 'Jornada nao encontrada'}, status=404)
+        date_str = journey.date.isoformat()
+        desc = f'Jornada {date_str}'
+        Transaction.objects.filter(
+            user=journey.user,
+            description__startswith=desc,
+            type='income',
+        ).delete()
         journey.delete()
-        return Response({'message': 'Jornada cancelada'})
+        return Response({'message': 'Jornada removida'})
 
 class DailySummaryView(views.APIView):
     def get(self, request):

@@ -88,7 +88,7 @@ export default function JourneyPage() {
   async function handleCancel() {
     if (!confirm('Tem certeza? A jornada sera cancelada e o KM inicial descartado.')) return;
     try {
-      await api.post(`/journeys/${journey!.id}/cancel/`);
+      await api.delete(`/journeys/${journey!.id}/cancel/`);
       toast('Jornada cancelada');
       resetAll();
     } catch { toast('Erro ao cancelar jornada', 'error'); }
@@ -144,6 +144,9 @@ export default function JourneyPage() {
           </div>
           <button onClick={resetAll} className="w-full py-2.5 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2">
             <RotateCcw size={16} /> Novo Dia
+          </button>
+          <button onClick={handleCancel} className="w-full py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 text-sm">
+            <XCircle size={16} /> Excluir esta jornada
           </button>
         </div>
       </div>
