@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { DollarSign, TrendingUp, Calendar, MapPin, PiggyBank, Fuel } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, MapPin, PiggyBank, Fuel, Navigation } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface DashboardData {
@@ -17,6 +18,7 @@ interface DashboardData {
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => { api.get('/dashboard/').then(r => setData(r.data)).catch(() => toast('Erro ao carregar dashboard', 'error')); }, []);
@@ -34,6 +36,9 @@ export default function Dashboard() {
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Online
         </div>
       </div>
+      <button onClick={() => navigate('/jornada')} className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-black font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
+        <Navigation size={20} /> Iniciar Jornada
+      </button>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={DollarSign} label="Faturamento Hoje" value={fmt(data.today_revenue)} color="bg-amber-500/20 text-amber-400" />
         <StatCard icon={TrendingUp} label="Faturamento Semana" value={fmt(data.week_revenue)} color="bg-emerald-500/20 text-emerald-400" />
