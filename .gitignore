@@ -33,3 +33,4 @@ backend/.env
 Thumbs.db
 
 .vercel
+/vercel.json
