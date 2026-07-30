@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Journey
+from finances.models import Transaction
 from datetime import datetime, timedelta
 
 class JourneyStartSerializer(serializers.ModelSerializer):
@@ -32,6 +33,30 @@ class JourneyEndSerializer(serializers.ModelSerializer):
         instance.is_active = False
         instance.is_paused = False
         instance.save()
+
+        uber_amount = (instance.total_revenue or 0) - (instance.cash_amount or 0)
+        date_str = instance.date.isoformat()
+        desc = f'Jornada {date_str}'
+
+        if uber_amount > 0:
+            Transaction.objects.create(
+                user=instance.user,
+                type='income',
+                category='uber',
+                amount=uber_amount,
+                description=f'{desc} - recebido via Uber',
+                date=instance.date,
+            )
+        if instance.cash_amount and instance.cash_amount > 0:
+            Transaction.objects.create(
+                user=instance.user,
+                type='income',
+                category='outros',
+                amount=instance.cash_amount,
+                description=f'{desc} - recebido em dinheiro',
+                date=instance.date,
+            )
+
         return instance
 
 class JourneySerializer(serializers.ModelSerializer):
