@@ -55,6 +55,14 @@ class ResumeJourneyView(views.APIView):
         journey.save()
         return Response(JourneySerializer(journey).data)
 
+class CancelJourneyView(views.APIView):
+    def post(self, request, pk):
+        journey = Journey.objects.filter(pk=pk, is_active=True, user=_get_user(request)).first()
+        if not journey:
+            return Response({'error': 'Jornada nao encontrada'}, status=404)
+        journey.delete()
+        return Response({'message': 'Jornada cancelada'})
+
 class DailySummaryView(views.APIView):
     def get(self, request):
         from datetime import date

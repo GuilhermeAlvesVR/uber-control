@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
-import { Play, Pause, Flag, RotateCcw, DollarSign, Wallet, PiggyBank, Gauge } from 'lucide-react';
+import { Play, Pause, Flag, RotateCcw, XCircle, DollarSign, Wallet, PiggyBank, Gauge } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import type { Journey } from '../types';
 
@@ -83,6 +83,15 @@ export default function JourneyPage() {
       await api.post(`/journeys/${journey!.id}/resume/`);
       setState('active');
     } catch { toast('Erro ao retomar jornada', 'error'); }
+  }
+
+  async function handleCancel() {
+    if (!confirm('Tem certeza? A jornada sera cancelada e o KM inicial descartado.')) return;
+    try {
+      await api.post(`/journeys/${journey!.id}/cancel/`);
+      toast('Jornada cancelada');
+      resetAll();
+    } catch { toast('Erro ao cancelar jornada', 'error'); }
   }
 
   async function handleEnd() {
@@ -213,6 +222,9 @@ export default function JourneyPage() {
             )}
             <button onClick={() => setState('ending')} className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all cursor-pointer">
               <Flag size={18} /> Encerrar
+            </button>
+            <button onClick={handleCancel} className="flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-lg transition-all cursor-pointer text-sm">
+              <XCircle size={16} /> Cancelar
             </button>
           </div>
         </div>
