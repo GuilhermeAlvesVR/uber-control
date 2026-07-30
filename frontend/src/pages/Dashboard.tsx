@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { DollarSign, TrendingUp, Calendar, MapPin, PiggyBank, Fuel, Navigation } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, MapPin, PiggyBank, Fuel, Navigation, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface DashboardData {
@@ -20,8 +20,22 @@ export default function Dashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState('');
 
-  useEffect(() => { api.get('/dashboard/').then(r => setData(r.data)).catch(() => toast('Erro ao carregar dashboard', 'error')); }, []);
+  function load() {
+    setError('');
+    api.get('/dashboard/').then(r => setData(r.data)).catch(e => { const msg = e?.response?.data ? JSON.stringify(e.response.data) : e.message; setError(msg); toast('Erro ao carregar dashboard', 'error'); });
+  }
+
+  useEffect(() => { load(); }, []);
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-64 space-y-4">
+      <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center"><AlertTriangle size={28} className="text-red-400" /></div>
+      <p className="text-zinc-400 text-sm text-center max-w-md">{error}</p>
+      <button onClick={load} className="flex items-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer"><RefreshCw size={16} /> Tentar novamente</button>
+    </div>
+  );
 
   if (!data) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-400 border-t-transparent" /></div>;
 
