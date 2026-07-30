@@ -3,6 +3,7 @@ services:
     name: uber-control
     runtime: python
     repo: https://github.com/GuilhermeAlvesVR/uber-control
+    rootDir: backend
     plan: free
     region: ohio
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
@@ -19,7 +20,7 @@ services:
           name: uber-control-db
           property: connectionString
       - key: CORS_ALLOWED_ORIGINS
-        sync: false
+        value: "https://uber-control.vercel.app"
       - key: PYTHON_VERSION
         value: "3.12"
 
