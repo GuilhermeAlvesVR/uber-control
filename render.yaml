@@ -2,7 +2,7 @@ services:
   - type: web
     name: uber-control
     runtime: python
-    repo: https://github.com/SEU_USUARIO/SEU_REPO
+    repo: https://github.com/GuilhermeAlvesVR/uber-control
     plan: free
     region: ohio
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
