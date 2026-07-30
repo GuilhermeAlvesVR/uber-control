@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLayout from './components/Layout/AppLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
 import JourneyPage from './pages/JourneyPage';
 import Caixa from './pages/Caixa';
@@ -16,16 +17,16 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/jornada" element={<JourneyPage />} />
-          <Route path="/caixa" element={<Caixa />} />
-          <Route path="/abastecimentos" element={<Fueling />} />
-          <Route path="/manutencoes" element={<Maintenance />} />
-          <Route path="/despesas" element={<Expenses />} />
-          <Route path="/metas" element={<Goals />} />
-          <Route path="/relatorios" element={<Reports />} />
-          <Route path="/veiculo" element={<Vehicle />} />
-          <Route path="/configuracoes" element={<Settings />} />
+          <Route path="/" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+          <Route path="/jornada" element={<ErrorBoundary><JourneyPage /></ErrorBoundary>} />
+          <Route path="/caixa" element={<ErrorBoundary><Caixa /></ErrorBoundary>} />
+          <Route path="/abastecimentos" element={<ErrorBoundary><Fueling /></ErrorBoundary>} />
+          <Route path="/manutencoes" element={<ErrorBoundary><Maintenance /></ErrorBoundary>} />
+          <Route path="/despesas" element={<ErrorBoundary><Expenses /></ErrorBoundary>} />
+          <Route path="/metas" element={<ErrorBoundary><Goals /></ErrorBoundary>} />
+          <Route path="/relatorios" element={<ErrorBoundary><Reports /></ErrorBoundary>} />
+          <Route path="/veiculo" element={<ErrorBoundary><Vehicle /></ErrorBoundary>} />
+          <Route path="/configuracoes" element={<ErrorBoundary><Settings /></ErrorBoundary>} />
         </Route>
       </Routes>
     </BrowserRouter>
