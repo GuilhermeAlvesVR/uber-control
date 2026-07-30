@@ -12,6 +12,7 @@ export default function JourneyPage() {
   const timerRef = useRef<number | undefined>(undefined);
   const pauseStartRef = useRef<number | null>(null);
 
+  const [startKm, setStartKm] = useState('');
   const [endKm, setEndKm] = useState('');
   const [totalRevenue, setTotalRevenue] = useState('');
   const [cashAmount, setCashAmount] = useState('');
@@ -47,13 +48,14 @@ export default function JourneyPage() {
   };
 
   async function handleStart() {
+    if (!startKm) { toast('Informe o KM inicial', 'error'); return; }
     setLoading(true);
     try {
       const now = new Date();
       const date = now.toISOString().split('T')[0];
       const start_time = now.toTimeString().split(':').slice(0, 2).join(':');
       const { data } = await api.post('/journeys/start/', {
-        date, start_time, start_km: 0,
+        date, start_time, start_km: parseInt(startKm),
       });
       setJourney(data);
       setElapsed(0);
@@ -108,6 +110,7 @@ export default function JourneyPage() {
     setElapsed(0);
     setPausedTotal(0);
     setResult(null);
+    setStartKm('');
     setEndKm('');
     setTotalRevenue('');
     setCashAmount('');
@@ -187,6 +190,7 @@ export default function JourneyPage() {
           <div className="grid grid-cols-2 gap-4 text-left max-w-xs mx-auto">
             <div><p className="text-xs text-zinc-500">Data</p><p className="text-zinc-100">{new Date(journey!.date).toLocaleDateString('pt-BR')}</p></div>
             <div><p className="text-xs text-zinc-500">Inicio</p><p className="text-zinc-100">{journey!.start_time}</p></div>
+            <div><p className="text-xs text-zinc-500">KM Inicial</p><p className="text-zinc-100">{journey!.start_km} km</p></div>
           </div>
           <div className="flex gap-3 justify-center">
             {state === 'active' ? (
@@ -210,10 +214,15 @@ export default function JourneyPage() {
   return (
     <div className="max-w-md mx-auto space-y-6 text-center">
       <h1 className="text-2xl font-bold text-zinc-100">Iniciar Jornada</h1>
-      <p className="text-sm text-zinc-500">Clique no botão para iniciar sua jornada de trabalho</p>
-      <button onClick={handleStart} disabled={loading} className="w-full py-4 bg-amber-400 hover:bg-amber-500 text-black font-bold text-lg rounded-xl transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-3">
-        <Play size={24} /> {loading ? 'Iniciando...' : 'Iniciar Dia'}
-      </button>
+      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-5">
+        <div className="text-left">
+          <label className="text-sm text-zinc-400 mb-1 block">KM Inicial</label>
+          <input type="number" value={startKm} onChange={e => setStartKm(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="Ex: 50000" />
+        </div>
+        <button onClick={handleStart} disabled={loading} className="w-full py-4 bg-amber-400 hover:bg-amber-500 text-black font-bold text-lg rounded-xl transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-3">
+          <Play size={24} /> {loading ? 'Iniciando...' : 'Iniciar Dia'}
+        </button>
+      </div>
     </div>
   );
 }
