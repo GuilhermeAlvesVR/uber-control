@@ -13,6 +13,7 @@ class Journey(models.Model):
     card_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     tips = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     tolls_received = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cash_on_hand = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     total_km = models.IntegerField(null=True, blank=True)
     total_revenue = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

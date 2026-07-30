@@ -1,6 +1,6 @@
-import { useState, useEffect, FormEvent, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
-import { Play, Pause, Flag, RotateCcw } from 'lucide-react';
+import { Play, Pause, Flag, RotateCcw, DollarSign, Wallet, PiggyBank, Gauge } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import type { Journey } from '../types';
 
@@ -12,17 +12,10 @@ export default function JourneyPage() {
   const timerRef = useRef<number | undefined>(undefined);
   const pauseStartRef = useRef<number | null>(null);
 
-  const [startForm, setStartForm] = useState({
-    date: new Date().toISOString().split('T')[0],
-    start_time: '',
-    start_km: '',
-    fuel_level_start: '',
-  });
-
-  const [endForm, setEndForm] = useState({
-    end_time: '', end_km: '', uber_amount: '', cash_amount: '',
-    pix_amount: '', card_amount: '', tips: '', tolls_received: '', notes: ''
-  });
+  const [endKm, setEndKm] = useState('');
+  const [totalRevenue, setTotalRevenue] = useState('');
+  const [cashAmount, setCashAmount] = useState('');
+  const [cashOnHand, setCashOnHand] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const [result, setResult] = useState<Journey | null>(null);
@@ -31,11 +24,7 @@ export default function JourneyPage() {
     api.get('/journeys/active/').then(r => {
       if (r.data) {
         setJourney(r.data);
-        if (r.data.is_paused) {
-          setState('paused');
-        } else {
-          setState('active');
-        }
+        setState(r.data.is_paused ? 'paused' : 'active');
       }
     }).catch(() => toast('Erro ao verificar jornada ativa', 'error'));
   }, []);
@@ -57,15 +46,14 @@ export default function JourneyPage() {
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   };
 
-  async function handleStart(e: FormEvent) {
-    e.preventDefault();
+  async function handleStart() {
     setLoading(true);
     try {
+      const now = new Date();
+      const date = now.toISOString().split('T')[0];
+      const start_time = now.toTimeString().split(':').slice(0, 2).join(':');
       const { data } = await api.post('/journeys/start/', {
-        date: startForm.date,
-        start_time: startForm.start_time,
-        start_km: parseInt(startForm.start_km),
-        fuel_level_start: startForm.fuel_level_start || null,
+        date, start_time, start_km: 0,
       });
       setJourney(data);
       setElapsed(0);
@@ -95,20 +83,18 @@ export default function JourneyPage() {
     } catch { toast('Erro ao retomar jornada', 'error'); }
   }
 
-  async function handleEnd(e: FormEvent) {
-    e.preventDefault();
+  async function handleEnd() {
+    if (!endKm) { toast('Informe o KM final', 'error'); return; }
     setLoading(true);
     try {
+      const now = new Date();
+      const end_time = now.toTimeString().split(':').slice(0, 2).join(':');
       const { data } = await api.patch(`/journeys/${journey!.id}/end/`, {
-        end_time: endForm.end_time,
-        end_km: parseInt(endForm.end_km),
-        uber_amount: parseFloat(endForm.uber_amount) || 0,
-        cash_amount: parseFloat(endForm.cash_amount) || 0,
-        pix_amount: parseFloat(endForm.pix_amount) || 0,
-        card_amount: parseFloat(endForm.card_amount) || 0,
-        tips: parseFloat(endForm.tips) || 0,
-        tolls_received: parseFloat(endForm.tolls_received) || 0,
-        notes: endForm.notes || '',
+        end_time,
+        end_km: parseInt(endKm),
+        total_revenue: parseFloat(totalRevenue) || 0,
+        cash_amount: parseFloat(cashAmount) || 0,
+        cash_on_hand: parseFloat(cashOnHand) || 0,
       });
       setResult(data);
       setState('done');
@@ -122,8 +108,10 @@ export default function JourneyPage() {
     setElapsed(0);
     setPausedTotal(0);
     setResult(null);
-    setStartForm({ ...startForm, start_time: '', start_km: '', fuel_level_start: '' });
-    setEndForm({ end_time: '', end_km: '', uber_amount: '', cash_amount: '', pix_amount: '', card_amount: '', tips: '', tolls_received: '', notes: '' });
+    setEndKm('');
+    setTotalRevenue('');
+    setCashAmount('');
+    setCashOnHand('');
   }
 
   const fmt = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')}`;
@@ -134,12 +122,12 @@ export default function JourneyPage() {
         <h1 className="text-2xl font-bold text-zinc-100">Resumo do Dia</h1>
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <ResumoBox label="KM Rodados" value={`${result.total_km ?? 0} km`} />
-            <ResumoBox label="Receita Total" value={fmt(Number(result.total_revenue ?? 0))} />
-            <ResumoBox label="Receita/km" value={fmt(Number(result.revenue_per_km ?? 0))} />
-            <ResumoBox label="Receita/hora" value={fmt(Number(result.revenue_per_hour ?? 0))} />
-            <ResumoBox label="Tempo" value={`${result.total_hours ?? 0}h`} />
-            <ResumoBox label="Dinheiro" value={fmt(Number(result.cash_amount ?? 0))} />
+            <ResumoBox icon={Gauge} label="KM Rodados" value={`${result.total_km ?? 0} km`} />
+            <ResumoBox icon={DollarSign} label="Receita Total" value={fmt(Number(result.total_revenue ?? 0))} />
+            <ResumoBox icon={Wallet} label="Dinheiro" value={fmt(Number(result.cash_amount ?? 0))} />
+            <ResumoBox icon={PiggyBank} label="Caixa em Dinheiro" value={fmt(Number(result.cash_on_hand ?? 0))} />
+            <ResumoBox icon={DollarSign} label="Receita/km" value={fmt(Number(result.revenue_per_km ?? 0))} />
+            <ResumoBox icon={DollarSign} label="Receita/hora" value={fmt(Number(result.revenue_per_hour ?? 0))} />
           </div>
           <button onClick={resetAll} className="w-full py-2.5 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2">
             <RotateCcw size={16} /> Novo Dia
@@ -153,25 +141,36 @@ export default function JourneyPage() {
     return (
       <div className="max-w-lg mx-auto space-y-6">
         <h1 className="text-2xl font-bold text-zinc-100">Encerrar Jornada</h1>
-        <form onSubmit={handleEnd} className="space-y-4 bg-zinc-900 rounded-xl border border-zinc-800 p-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-sm text-zinc-400 mb-1 block">Hora Final</label><input type="time" value={endForm.end_time} onChange={e => setEndForm({...endForm, end_time: e.target.value})} required className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" /></div>
-            <div><label className="text-sm text-zinc-400 mb-1 block">KM Final</label><input type="number" value={endForm.end_km} onChange={e => setEndForm({...endForm, end_km: e.target.value})} required className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" /></div>
-            <Campo label="Uber" val={endForm.uber_amount} set={v => setEndForm({...endForm, uber_amount: v})} />
-            <Campo label="Dinheiro" val={endForm.cash_amount} set={v => setEndForm({...endForm, cash_amount: v})} />
-            <Campo label="Pix" val={endForm.pix_amount} set={v => setEndForm({...endForm, pix_amount: v})} />
-            <Campo label="Cartao" val={endForm.card_amount} set={v => setEndForm({...endForm, card_amount: v})} />
-            <Campo label="Gorjetas" val={endForm.tips} set={v => setEndForm({...endForm, tips: v})} />
-            <Campo label="Pedagios" val={endForm.tolls_received} set={v => setEndForm({...endForm, tolls_received: v})} />
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-5">
+          <div className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg">
+            <div className="text-3xl font-mono text-amber-400">{displayTime()}</div>
+            <div className="text-xs text-zinc-500">Tempo trabalhado</div>
           </div>
-          <div><label className="text-sm text-zinc-400 mb-1 block">Observacoes</label><textarea value={endForm.notes} onChange={e => setEndForm({...endForm, notes: e.target.value})} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" rows={3} /></div>
-          <button type="submit" disabled={loading} className="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all cursor-pointer">
-            {loading ? 'Finalizando...' : 'Finalizar Dia'}
-          </button>
-          <button type="button" onClick={() => setState('active')} className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-all cursor-pointer text-sm">
-            Voltar
-          </button>
-        </form>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><Gauge size={14} /> KM Final</label>
+              <input type="number" value={endKm} onChange={e => setEndKm(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="Ex: 52300" />
+            </div>
+            <div>
+              <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><DollarSign size={14} /> Total que fiz no dia (R$)</label>
+              <input type="number" step="0.01" value={totalRevenue} onChange={e => setTotalRevenue(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+            </div>
+            <div>
+              <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><Wallet size={14} /> Recebi em dinheiro (R$)</label>
+              <input type="number" step="0.01" value={cashAmount} onChange={e => setCashAmount(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+            </div>
+            <div>
+              <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><PiggyBank size={14} /> Caixa em dinheiro (R$)</label>
+              <input type="number" step="0.01" value={cashOnHand} onChange={e => setCashOnHand(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={handleEnd} disabled={loading} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all cursor-pointer disabled:opacity-50">
+              {loading ? 'Finalizando...' : 'Finalizar Dia'}
+            </button>
+            <button onClick={() => setState('active')} className="py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-all cursor-pointer text-sm">Voltar</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -187,7 +186,6 @@ export default function JourneyPage() {
           {state === 'paused' && <p className="text-zinc-500 text-sm">PAUSADO</p>}
           <div className="grid grid-cols-2 gap-4 text-left max-w-xs mx-auto">
             <div><p className="text-xs text-zinc-500">Data</p><p className="text-zinc-100">{new Date(journey!.date).toLocaleDateString('pt-BR')}</p></div>
-            <div><p className="text-xs text-zinc-500">KM Inicial</p><p className="text-zinc-100">{journey!.start_km} km</p></div>
             <div><p className="text-xs text-zinc-500">Inicio</p><p className="text-zinc-100">{journey!.start_time}</p></div>
           </div>
           <div className="flex gap-3 justify-center">
@@ -210,43 +208,24 @@ export default function JourneyPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-md mx-auto space-y-6 text-center">
       <h1 className="text-2xl font-bold text-zinc-100">Iniciar Jornada</h1>
-      <form onSubmit={handleStart} className="space-y-4 bg-zinc-900 rounded-xl border border-zinc-800 p-6">
-        <div>
-          <label className="text-sm text-zinc-400 mb-1 block">Data</label>
-          <input type="date" value={startForm.date} onChange={e => setStartForm({...startForm, date: e.target.value})} required className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" />
-        </div>
-        <div>
-          <label className="text-sm text-zinc-400 mb-1 block">Hora de Inicio</label>
-          <input type="time" value={startForm.start_time} onChange={e => setStartForm({...startForm, start_time: e.target.value})} required className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" />
-        </div>
-        <div>
-          <label className="text-sm text-zinc-400 mb-1 block">KM Inicial</label>
-          <input type="number" value={startForm.start_km} onChange={e => setStartForm({...startForm, start_km: e.target.value})} required className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="Ex: 50000" />
-        </div>
-        <div>
-          <label className="text-sm text-zinc-400 mb-1 block">Nivel de Combustivel <span className="text-zinc-600">(opcional)</span></label>
-          <select value={startForm.fuel_level_start} onChange={e => setStartForm({...startForm, fuel_level_start: e.target.value})} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100">
-            <option value="">Selecione</option>
-            <option value="1/4">1/4</option>
-            <option value="1/2">1/2</option>
-            <option value="3/4">3/4</option>
-            <option value="Completo">Completo</option>
-          </select>
-        </div>
-        <button type="submit" disabled={loading} className="w-full py-2.5 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2">
-          <Play size={18} /> {loading ? 'Iniciando...' : 'Iniciar Dia'}
-        </button>
-      </form>
+      <p className="text-sm text-zinc-500">Clique no botão para iniciar sua jornada de trabalho</p>
+      <button onClick={handleStart} disabled={loading} className="w-full py-4 bg-amber-400 hover:bg-amber-500 text-black font-bold text-lg rounded-xl transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-3">
+        <Play size={24} /> {loading ? 'Iniciando...' : 'Iniciar Dia'}
+      </button>
     </div>
   );
 }
 
-function Campo({ label, val, set }: { label: string; val: string; set: (v: string) => void }) {
-  return <div><label className="text-sm text-zinc-400 mb-1 block">{label}</label><input type="number" step="0.01" value={val} onChange={e => set(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="R$ 0,00" /></div>;
-}
-
-function ResumoBox({ label, value }: { label: string; value: string }) {
-  return <div className="bg-zinc-800/50 rounded-lg p-4"><p className="text-xs text-zinc-500 mb-1">{label}</p><p className="text-lg font-semibold text-zinc-100">{value}</p></div>;
+function ResumoBox({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div className="bg-zinc-800/50 rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon size={14} className="text-zinc-500" />
+        <p className="text-xs text-zinc-500">{label}</p>
+      </div>
+      <p className="text-lg font-semibold text-zinc-100">{value}</p>
+    </div>
+  );
 }

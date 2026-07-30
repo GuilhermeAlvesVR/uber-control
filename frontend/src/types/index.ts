@@ -28,6 +28,7 @@ export interface Journey {
   card_amount: number | null;
   tips: number | null;
   tolls_received: number | null;
+  cash_on_hand: number | null;
   notes: string | null;
   total_km: number | null;
   total_revenue: number | null;
