@@ -128,6 +128,7 @@ export default function JourneyPage() {
             <ResumoBox icon={Gauge} label="KM Rodados" value={`${result.total_km ?? 0} km`} />
             <ResumoBox icon={DollarSign} label="Receita Total" value={fmt(Number(result.total_revenue ?? 0))} />
             <ResumoBox icon={Wallet} label="Dinheiro" value={fmt(Number(result.cash_amount ?? 0))} />
+            <ResumoBox icon={DollarSign} label="Ficou na Conta Uber" value={fmt(Number((result.total_revenue ?? 0) - (result.cash_amount ?? 0)))} />
             <ResumoBox icon={PiggyBank} label="Caixa em Dinheiro" value={fmt(Number(result.cash_on_hand ?? 0))} />
             <ResumoBox icon={DollarSign} label="Receita/km" value={fmt(Number(result.revenue_per_km ?? 0))} />
             <ResumoBox icon={DollarSign} label="Receita/hora" value={fmt(Number(result.revenue_per_hour ?? 0))} />
@@ -161,6 +162,14 @@ export default function JourneyPage() {
             <div>
               <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><Wallet size={14} /> Recebi em dinheiro (R$)</label>
               <input type="number" step="0.01" value={cashAmount} onChange={e => setCashAmount(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+            </div>
+            <div className="bg-zinc-800/50 rounded-lg p-3 flex items-center justify-between">
+              <span className="text-sm text-zinc-400">Ficou na conta da Uber</span>
+              <span className="text-lg font-semibold text-emerald-400">
+                {totalRevenue && cashAmount
+                  ? `R$ ${(parseFloat(totalRevenue) - parseFloat(cashAmount)).toFixed(2)}`
+                  : 'R$ 0,00'}
+              </span>
             </div>
             <div>
               <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><PiggyBank size={14} /> Caixa em dinheiro (R$)</label>
