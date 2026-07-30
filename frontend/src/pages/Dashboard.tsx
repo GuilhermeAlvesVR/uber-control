@@ -39,7 +39,7 @@ export default function Dashboard() {
 
   if (!data) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-400 border-t-transparent" /></div>;
 
-  const fmt = (v: number) => 'R$ ' + v.toFixed(2).replace('.', ',');
+  const fmt = (v: number | null | undefined) => 'R$ ' + (v ?? 0).toFixed(2).replace('.', ',');
   const pct = data.daily_goal > 0 ? Math.min((data.today_revenue / data.daily_goal) * 100, 100) : 0;
 
   return (

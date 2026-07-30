@@ -36,7 +36,10 @@ class DashboardView(APIView):
         month_fuel = Fueling.objects.filter(user=u, date__gte=month_start).aggregate(s=Sum('amount'))['s'] or 0
         total_fuel = Fueling.objects.filter(user=u).aggregate(s=Sum('amount'))['s'] or 0
 
-        daily_revenue = list(month_data.values('date').annotate(revenue=Sum('total_revenue')).order_by('date')[:30])
+        daily_revenue = [
+            {'date': r['date'], 'revenue': float(r['revenue'] or 0)}
+            for r in month_data.values('date').annotate(revenue=Sum('total_revenue')).order_by('date')[:30]
+        ]
 
         daily_goal = Goal.objects.filter(user=u, type='daily').first()
         daily_progress = (float(today_revenue) / float(daily_goal.target_amount) * 100) if daily_goal and daily_goal.target_amount > 0 else 0
