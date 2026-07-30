@@ -1,16 +1,17 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Plus, ArrowUpRight, ArrowDownRight, Banknote, Smartphone, Wallet, Trash2 } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, Banknote, Smartphone, Wallet, Home, Trash2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import type { Transaction } from '../types';
 
-const categories = ['combustivel','alimentacao','lavagem','manutencao','seguro','pedagio','uber','particular','outros'];
-const catLabels: Record<string,string> = {combustivel:'Combustivel',alimentacao:'Alimentacao',lavagem:'Lavagem',manutencao:'Manutencao',seguro:'Seguro',pedagio:'Pedagio',uber:'Uber',particular:'Particular',outros:'Outros'};
+const categories = ['combustivel','alimentacao','lavagem','manutencao','seguro','pedagio','uber','particular','sangria','outros'];
+const catLabels: Record<string,string> = {combustivel:'Combustivel',alimentacao:'Alimentacao',lavagem:'Lavagem',manutencao:'Manutencao',seguro:'Seguro',pedagio:'Pedagio',uber:'Uber',particular:'Particular',sangria:'Sangria',outros:'Outros'};
+const formCategories = categories.filter(c => c !== 'sangria');
 
 export default function Caixa() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState({balance:0,incomes:0,expenses:0,uber_balance:0,cash_balance:0});
+  const [balance, setBalance] = useState({balance:0,incomes:0,expenses:0,uber_balance:0,cash_balance:0,sangria:0});
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({type:'income',category:'outros',amount:'',description:'',date:new Date().toISOString().split('T')[0]});
 
@@ -43,12 +44,16 @@ export default function Caixa() {
   return (
     <div className='space-y-6'>
       <div className='flex items-center justify-between'><h1 className='text-2xl font-bold text-zinc-100'>Caixa</h1>
-        <button onClick={() => setShowForm(true)} className='flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer text-sm'><Plus size={16} /> Nova</button>
+        <div className='flex gap-2'>
+          <button onClick={() => { setForm({type:'expense',category:'sangria',amount:'',description:'',date:new Date().toISOString().split('T')[0]}); setShowForm(true); }} className='flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold rounded-lg transition-all cursor-pointer text-sm'><Home size={16} /> Sangria</button>
+          <button onClick={() => setShowForm(true)} className='flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer text-sm'><Plus size={16} /> Nova</button>
+        </div>
       </div>
       <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><Banknote size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Saldo Total</p><p className='text-2xl font-bold text-zinc-100'>R\$ {balance.balance.toFixed(2)}</p></div>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center'><Smartphone size={20} className='text-blue-400' /></div></div><p className='text-xs text-zinc-500'>Saldo Conta Uber</p><p className='text-2xl font-bold text-blue-400'>R\$ {balance.uber_balance.toFixed(2)}</p></div>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><Wallet size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Saldo em Dinheiro</p><p className='text-2xl font-bold text-emerald-400'>R\$ {balance.cash_balance.toFixed(2)}</p></div>
+        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center'><Home size={20} className='text-amber-400' /></div></div><p className='text-xs text-zinc-500'>Sangria (guardado)</p><p className='text-2xl font-bold text-amber-400'>R\$ {balance.sangria.toFixed(2)}</p></div>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><ArrowUpRight size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Entradas</p><p className='text-2xl font-bold text-emerald-400'>R\$ {balance.incomes.toFixed(2)}</p></div>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center'><ArrowDownRight size={20} className='text-red-400' /></div></div><p className='text-xs text-zinc-500'>Saidas</p><p className='text-2xl font-bold text-red-400'>R\$ {balance.expenses.toFixed(2)}</p></div>
       </div>
@@ -60,7 +65,7 @@ export default function Caixa() {
             </select></div>
           <div><label className='text-sm text-zinc-400 mb-1 block'>Categoria</label>
             <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className='w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100'>
-              {categories.map(c=><option key={c} value={c}>{catLabels[c]}</option>)}
+              {formCategories.map(c=><option key={c} value={c}>{catLabels[c]}</option>)}
             </select></div>
         </div>
         <div className='grid grid-cols-2 gap-4'>

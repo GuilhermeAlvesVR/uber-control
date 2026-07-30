@@ -10,6 +10,7 @@ CATEGORY_CHOICES = [
     ('pedagio', 'Pedágio'),
     ('uber', 'Uber'),
     ('particular', 'Particular'),
+    ('sangria', 'Sangria'),
     ('outros', 'Outros'),
 ]
 
