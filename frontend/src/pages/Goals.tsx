@@ -66,7 +66,7 @@ export default function Goals() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {goals.map((goal: any) => {
+        {(goals || []).map((goal: any) => {
           const pct = getProgress(goal.type);
           return (
             <div key={goal.id} className="bg-zinc-900 rounded-xl border border-zinc-800 p-5">

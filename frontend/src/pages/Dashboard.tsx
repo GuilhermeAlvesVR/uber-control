@@ -75,13 +75,13 @@ export default function Dashboard() {
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-5">
           <h2 className="text-sm font-medium text-zinc-100 mb-4">Receita por Dia</h2>
           <div className="space-y-2">
-            {data.daily_revenue.map((d, i) => (
+            {Array.isArray(data.daily_revenue) && data.daily_revenue.map((d, i) => (
               <div key={i} className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">{new Date(d.date).toLocaleDateString('pt-BR')}</span>
                 <span className="text-zinc-100 font-medium">{fmt(d.revenue)}</span>
               </div>
             ))}
-            {data.daily_revenue.length === 0 && <p className="text-zinc-500 text-sm">Nenhum dado</p>}
+            {(!Array.isArray(data.daily_revenue) || data.daily_revenue.length === 0) && <p className="text-zinc-500 text-sm">Nenhum dado</p>}
           </div>
         </div>
         <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-5">

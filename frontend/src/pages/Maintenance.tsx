@@ -61,7 +61,7 @@ export default function Maintenance() {
 
       <div className="bg-zinc-900 rounded-xl border border-zinc-800">
         <div className="divide-y divide-zinc-800">
-          {list.map((item) => (
+          {(list || []).map((item) => (
             <div key={item.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors group">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center"><Wrench size={16} className="text-red-400" /></div>
