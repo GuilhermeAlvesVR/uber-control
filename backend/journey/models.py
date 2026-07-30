@@ -1,6 +1,8 @@
 from django.db import models
+from django.conf import settings
 
 class Journey(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='journeys', default=1)
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField(null=True, blank=True)
