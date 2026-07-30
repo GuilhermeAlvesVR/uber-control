@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Plus, ArrowUpRight, ArrowDownRight, Banknote, Trash2 } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, Banknote, Smartphone, Wallet, Trash2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import type { Transaction } from '../types';
 
@@ -10,7 +10,7 @@ const catLabels: Record<string,string> = {combustivel:'Combustivel',alimentacao:
 export default function Caixa() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState({balance:0,incomes:0,expenses:0});
+  const [balance, setBalance] = useState({balance:0,incomes:0,expenses:0,uber_balance:0,cash_balance:0});
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({type:'income',category:'outros',amount:'',description:'',date:new Date().toISOString().split('T')[0]});
 
@@ -45,8 +45,10 @@ export default function Caixa() {
       <div className='flex items-center justify-between'><h1 className='text-2xl font-bold text-zinc-100'>Caixa</h1>
         <button onClick={() => setShowForm(true)} className='flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer text-sm'><Plus size={16} /> Nova</button>
       </div>
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><Banknote size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Saldo Total</p><p className='text-2xl font-bold text-zinc-100'>R\$ {balance.balance.toFixed(2)}</p></div>
+        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center'><Smartphone size={20} className='text-blue-400' /></div></div><p className='text-xs text-zinc-500'>Saldo Conta Uber</p><p className='text-2xl font-bold text-blue-400'>R\$ {balance.uber_balance.toFixed(2)}</p></div>
+        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><Wallet size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Saldo em Dinheiro</p><p className='text-2xl font-bold text-emerald-400'>R\$ {balance.cash_balance.toFixed(2)}</p></div>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><ArrowUpRight size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Entradas</p><p className='text-2xl font-bold text-emerald-400'>R\$ {balance.incomes.toFixed(2)}</p></div>
         <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center'><ArrowDownRight size={20} className='text-red-400' /></div></div><p className='text-xs text-zinc-500'>Saidas</p><p className='text-2xl font-bold text-red-400'>R\$ {balance.expenses.toFixed(2)}</p></div>
       </div>

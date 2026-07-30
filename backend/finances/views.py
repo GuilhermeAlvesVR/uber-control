@@ -34,7 +34,15 @@ class BalanceView(APIView):
         u = _get_user(request)
         incomes = Transaction.objects.filter(user=u, type='income').aggregate(total=Sum('amount'))['total'] or 0
         expenses = Transaction.objects.filter(user=u, type='expense').aggregate(total=Sum('amount'))['total'] or 0
-        return Response({'balance': float(incomes - expenses), 'incomes': float(incomes), 'expenses': float(expenses)})
+        uber_income = Transaction.objects.filter(user=u, type='income', category='uber').aggregate(total=Sum('amount'))['total'] or 0
+        cash_income = Transaction.objects.filter(user=u, type='income', category='outros').aggregate(total=Sum('amount'))['total'] or 0
+        return Response({
+            'balance': float(incomes - expenses),
+            'incomes': float(incomes),
+            'expenses': float(expenses),
+            'uber_balance': float(uber_income),
+            'cash_balance': float(cash_income),
+        })
 
 class GoalListCreateView(generics.ListCreateAPIView):
     serializer_class = GoalSerializer
