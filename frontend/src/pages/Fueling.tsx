@@ -1,12 +1,14 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Fuel, Plus, Trash2 } from 'lucide-react';
+import { Fuel, Plus, Trash2, Fuel as FuelIcon } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { Skeleton, EmptyState } from '../components/ui';
 import type { Fueling as FuelingType } from '../types';
 
 export default function Fueling() {
   const { toast } = useToast();
   const [list, setList] = useState<FuelingType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], station: '', amount: '', liters: '', price_per_liter: '', km: '' });
 
@@ -15,6 +17,7 @@ export default function Fueling() {
       const r = await api.get('/fueling/');
       setList(r.data.results ?? r.data);
     } catch { toast('Erro ao carregar abastecimentos', 'error'); }
+    setLoading(false);
   }
 
   useEffect(() => { load(); }, []);
@@ -69,7 +72,17 @@ export default function Fueling() {
 
       <div className="card">
         <div className="divide-y divide-zinc-800/60">
-          {(list || []).map((item) => (
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 p-4">
+                <Skeleton className="w-8 h-8 rounded-lg" />
+                <div className="flex-1 space-y-2"><Skeleton className="h-3 w-32" /><Skeleton className="h-3 w-24" /></div>
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))
+          ) : (list || []).length === 0 ? (
+            <EmptyState icon={FuelIcon} title="Nenhum abastecimento registrado" />
+          ) : (list || []).map((item) => (
             <div key={item.id} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors group">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center"><Fuel size={16} className="text-amber-400" /></div>
@@ -84,7 +97,6 @@ export default function Fueling() {
               </div>
             </div>
           ))}
-          {list.length === 0 && <p className="text-zinc-500 text-sm p-4 text-center">Nenhum abastecimento registrado</p>}
         </div>
       </div>
     </div>

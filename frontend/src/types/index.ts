@@ -96,6 +96,7 @@ export interface DashboardData {
   daily_goal: number;
   daily_progress: number;
   daily_revenue: { date: string; revenue: number }[];
+  expenses_by_category: { category: string; total: number }[];
 }
 
 export interface ReportData {

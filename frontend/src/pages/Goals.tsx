@@ -1,7 +1,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Plus, Crosshair } from 'lucide-react';
+import { Plus, Crosshair, Target } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { EmptyState } from '../components/ui';
 
 export default function Goals() {
   const { toast } = useToast();
@@ -65,7 +66,7 @@ export default function Goals() {
         </form>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger">
         {(Array.isArray(goals) ? goals : []).map((goal: any) => {
           const pct = getProgress(goal.type);
           return (
@@ -81,7 +82,11 @@ export default function Goals() {
             </div>
           );
         })}
-        {(!Array.isArray(goals) || goals.length === 0) && <p className="text-zinc-500 text-sm col-span-3 text-center py-8">Nenhuma meta definida</p>}
+        {(!Array.isArray(goals) || goals.length === 0) && (
+          <div className="col-span-3">
+            <EmptyState icon={Target} title="Nenhuma meta definida" action={<button onClick={() => setShowForm(true)} className="btn-primary">Criar primeira meta</button>} />
+          </div>
+        )}
       </div>
     </div>
   );

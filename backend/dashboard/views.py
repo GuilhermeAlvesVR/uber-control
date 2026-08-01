@@ -41,6 +41,11 @@ class DashboardView(APIView):
             for r in month_data.values('date').annotate(revenue=Sum('total_revenue')).order_by('date')[:30]
         ]
 
+        expenses_by_category = [
+            {'category': r['category'], 'total': float(r['total'] or 0)}
+            for r in Expense.objects.filter(user=u, date__gte=month_start).values('category').annotate(total=Sum('amount')).order_by('-total')
+        ]
+
         daily_goal = Goal.objects.filter(user=u, type='daily').first()
         daily_progress = (float(today_revenue) / float(daily_goal.target_amount) * 100) if daily_goal and daily_goal.target_amount > 0 else 0
 
@@ -54,4 +59,5 @@ class DashboardView(APIView):
             'daily_goal': float(daily_goal.target_amount) if daily_goal else 0,
             'daily_progress': round(daily_progress, 1),
             'daily_revenue': daily_revenue,
+            'expenses_by_category': expenses_by_category,
         })

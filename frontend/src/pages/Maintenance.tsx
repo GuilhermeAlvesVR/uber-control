@@ -2,11 +2,13 @@ import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
 import { Wrench, Plus, Trash2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { Skeleton, EmptyState } from '../components/ui';
 import type { Maintenance as MaintenanceType } from '../types';
 
 export default function Maintenance() {
   const { toast } = useToast();
   const [list, setList] = useState<MaintenanceType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], service: '', amount: '', km: '', workshop: '', notes: '' });
 
@@ -15,6 +17,7 @@ export default function Maintenance() {
       const r = await api.get('/maintenance/');
       setList(r.data.results ?? r.data);
     } catch { toast('Erro ao carregar manutencoes', 'error'); }
+    setLoading(false);
   }
 
   useEffect(() => { load(); }, []);
@@ -61,7 +64,17 @@ export default function Maintenance() {
 
       <div className="card">
         <div className="divide-y divide-zinc-800/60">
-          {(list || []).map((item) => (
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 p-4">
+                <Skeleton className="w-8 h-8 rounded-lg" />
+                <div className="flex-1 space-y-2"><Skeleton className="h-3 w-32" /><Skeleton className="h-3 w-24" /></div>
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))
+          ) : (list || []).length === 0 ? (
+            <EmptyState icon={Wrench} title="Nenhuma manutencao registrada" />
+          ) : (list || []).map((item) => (
             <div key={item.id} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors group">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center"><Wrench size={16} className="text-red-400" /></div>
@@ -76,7 +89,6 @@ export default function Maintenance() {
               </div>
             </div>
           ))}
-          {list.length === 0 && <p className="text-zinc-500 text-sm p-4 text-center">Nenhuma manutencao registrada</p>}
         </div>
       </div>
     </div>

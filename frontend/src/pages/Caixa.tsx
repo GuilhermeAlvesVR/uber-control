@@ -1,7 +1,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Plus, ArrowUpRight, ArrowDownRight, Banknote, Smartphone, Wallet, Home, Trash2 } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, Banknote, Smartphone, Wallet, Home, Trash2, Wallet2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { useCountUp, EmptyState } from '../components/ui';
 import type { Transaction } from '../types';
 
 const categories = ['combustivel','alimentacao','lavagem','manutencao','seguro','pedagio','uber','particular','sangria','outros'];
@@ -50,13 +51,13 @@ export default function Caixa() {
           <button onClick={() => setShowForm(true)} className='btn-primary'><Plus size={16} /> Nova</button>
         </div>
       </div>
-      <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
-        <Stat icon={Banknote} label='Saldo Total' value={`R$ ${balance.balance.toFixed(2)}`} color='text-zinc-100' gradient='from-emerald-400 to-teal-500' />
-        <Stat icon={Smartphone} label='Saldo Conta Uber' value={`R$ ${balance.uber_balance.toFixed(2)}`} color='text-blue-400' gradient='from-blue-400 to-indigo-500' />
-        <Stat icon={Wallet} label='Saldo em Dinheiro' value={`R$ ${balance.cash_balance.toFixed(2)}`} color='text-emerald-400' gradient='from-emerald-400 to-green-500' />
-        <Stat icon={Home} label='Sangria (guardado)' value={`R$ ${(balance.sangria ?? 0).toFixed(2)}`} color='text-amber-400' gradient='from-amber-400 to-orange-500' />
-        <Stat icon={ArrowUpRight} label='Entradas' value={`R$ ${balance.incomes.toFixed(2)}`} color='text-emerald-400' gradient='from-emerald-400 to-teal-500' />
-        <Stat icon={ArrowDownRight} label='Saidas' value={`R$ ${balance.expenses.toFixed(2)}`} color='text-red-400' gradient='from-red-400 to-rose-500' />
+      <div className='grid grid-cols-2 md:grid-cols-3 gap-4 stagger'>
+        <Stat icon={Banknote} label='Saldo Total' value={balance.balance} color='text-zinc-100' gradient='from-emerald-400 to-teal-500' />
+        <Stat icon={Smartphone} label='Saldo Conta Uber' value={balance.uber_balance} color='text-blue-400' gradient='from-blue-400 to-indigo-500' />
+        <Stat icon={Wallet} label='Saldo em Dinheiro' value={balance.cash_balance} color='text-emerald-400' gradient='from-emerald-400 to-green-500' />
+        <Stat icon={Home} label='Sangria (guardado)' value={balance.sangria ?? 0} color='text-amber-400' gradient='from-amber-400 to-orange-500' />
+        <Stat icon={ArrowUpRight} label='Entradas' value={balance.incomes} color='text-emerald-400' gradient='from-emerald-400 to-teal-500' />
+        <Stat icon={ArrowDownRight} label='Saidas' value={balance.expenses} color='text-red-400' gradient='from-red-400 to-rose-500' />
       </div>
       {showForm && <form onSubmit={handleSubmit} className='card p-6 space-y-4 animate-slide-up'>
         <div className='grid grid-cols-2 gap-4'>
@@ -94,21 +95,22 @@ export default function Caixa() {
               </div>
             </div>
           ))}
-          {(!Array.isArray(transactions) || transactions.length===0) && <p className='text-zinc-500 text-sm p-4 text-center'>Nenhuma transacao</p>}
+          {(!Array.isArray(transactions) || transactions.length===0) && <EmptyState icon={Wallet2} title='Nenhuma transacao registrada' />}
         </div>
       </div>
     </div>
   );
 }
 
-function Stat({ icon: Icon, label, value, color, gradient }: { icon: any; label: string; value: string; color: string; gradient: string }) {
+function Stat({ icon: Icon, label, value, color, gradient }: { icon: any; label: string; value: number; color: string; gradient: string }) {
+  const animated = useCountUp(value);
   return (
     <div className='card card-hover p-5 group'>
       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 shadow-lg transition-transform group-hover:scale-110 group-hover:-rotate-3`}>
         <Icon size={20} className='text-zinc-950' />
       </div>
       <p className='text-xs text-zinc-500'>{label}</p>
-      <p className={'text-xl font-bold ' + color}>{value}</p>
+      <p className={'text-xl font-bold ' + color}>R$ {animated.toFixed(2)}</p>
     </div>
   );
 }
