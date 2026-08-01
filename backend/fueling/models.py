@@ -9,9 +9,9 @@ class Fueling(models.Model):
     liters = models.DecimalField(max_digits=10, decimal_places=2)
     price_per_liter = models.DecimalField(max_digits=6, decimal_places=2)
     km = models.IntegerField()
-    avg_consumption = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    km_per_liter = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    cost_per_km = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    avg_consumption = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    km_per_liter = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    cost_per_km = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -20,5 +20,5 @@ class Fueling(models.Model):
     def save(self, *args, **kwargs):
         if self.liters > 0:
             self.km_per_liter = round(self.km / self.liters, 2) if self.km else None
-            self.cost_per_km = round(self.amount / self.km, 2) if self.km else None
+            self.cost_per_km = round(self.amount / self.km, 4) if self.km else None
         super().save(*args, **kwargs)

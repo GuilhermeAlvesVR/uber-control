@@ -4,4 +4,4 @@ from .models import Vehicle
 class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
-        fields = '__all__'
+        fields = ['id', 'model', 'year', 'plate', 'avg_consumption', 'next_oil_change_km', 'next_revision_km']

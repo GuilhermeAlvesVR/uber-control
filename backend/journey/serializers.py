@@ -29,7 +29,7 @@ class JourneyEndSerializer(serializers.ModelSerializer):
             work_seconds = max(diff.total_seconds() - total_paused, 0)
             instance.total_hours = round(work_seconds / 3600, 2)
             if instance.total_hours > 0:
-                instance.revenue_per_hour = round((instance.total_revenue or 0) / instance.total_hours, 2)
+                instance.revenue_per_hour = round(float(instance.total_revenue or 0) / instance.total_hours, 2)
         instance.is_active = False
         instance.is_paused = False
         instance.save()

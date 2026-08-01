@@ -16,5 +16,8 @@ class VehicleRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         u = _get_user(self.request)
-        obj, _ = Vehicle.objects.get_or_create(user=u)
+        obj, _ = Vehicle.objects.get_or_create(
+            user=u,
+            defaults={'model': '', 'year': 2000, 'plate': '', 'avg_consumption': 0},
+        )
         return obj

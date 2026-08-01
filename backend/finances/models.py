@@ -41,6 +41,7 @@ class Goal(models.Model):
 
     class Meta:
         unique_together = ['user', 'type']
+        ordering = ['type']
 
 class Expense(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='expenses')
