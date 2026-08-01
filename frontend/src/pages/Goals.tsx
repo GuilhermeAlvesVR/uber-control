@@ -16,7 +16,7 @@ export default function Goals() {
         api.get('/finances/goals/'),
         api.get('/dashboard/'),
       ]);
-      setGoals(g.data);
+      setGoals(g.data.results ?? g.data);
       setDashboard(d.data);
     } catch { toast('Erro ao carregar metas', 'error'); }
   }
@@ -66,7 +66,7 @@ export default function Goals() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(goals || []).map((goal: any) => {
+        {(Array.isArray(goals) ? goals : []).map((goal: any) => {
           const pct = getProgress(goal.type);
           return (
             <div key={goal.id} className="bg-zinc-900 rounded-xl border border-zinc-800 p-5">
@@ -81,7 +81,7 @@ export default function Goals() {
             </div>
           );
         })}
-        {goals.length === 0 && <p className="text-zinc-500 text-sm col-span-3 text-center py-8">Nenhuma meta definida</p>}
+        {(!Array.isArray(goals) || goals.length === 0) && <p className="text-zinc-500 text-sm col-span-3 text-center py-8">Nenhuma meta definida</p>}
       </div>
     </div>
   );
