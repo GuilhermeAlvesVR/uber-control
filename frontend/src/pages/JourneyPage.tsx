@@ -132,7 +132,7 @@ export default function JourneyPage() {
     return (
       <div className="max-w-lg mx-auto space-y-6">
         <h1 className="text-2xl font-bold text-zinc-100">Resumo do Dia</h1>
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
+        <div className="card p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <ResumoBox icon={Gauge} label="KM Rodados" value={`${result.total_km ?? 0} km`} />
             <ResumoBox icon={DollarSign} label="Receita Total" value={fmt(Number(result.total_revenue ?? 0))} />
@@ -142,10 +142,10 @@ export default function JourneyPage() {
             <ResumoBox icon={DollarSign} label="Receita/km" value={fmt(Number(result.revenue_per_km ?? 0))} />
             <ResumoBox icon={DollarSign} label="Receita/hora" value={fmt(Number(result.revenue_per_hour ?? 0))} />
           </div>
-          <button onClick={resetAll} className="w-full py-2.5 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+          <button onClick={resetAll} className="btn-primary w-full">
             <RotateCcw size={16} /> Novo Dia
           </button>
-          <button onClick={handleCancel} className="w-full py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 text-sm">
+          <button onClick={handleCancel} className="btn-danger w-full text-sm">
             <XCircle size={16} /> Excluir esta jornada
           </button>
         </div>
@@ -157,25 +157,25 @@ export default function JourneyPage() {
     return (
       <div className="max-w-lg mx-auto space-y-6">
         <h1 className="text-2xl font-bold text-zinc-100">Encerrar Jornada</h1>
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-5">
-          <div className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg">
+        <div className="card p-6 space-y-5">
+          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
             <div className="text-3xl font-mono text-amber-400">{displayTime()}</div>
             <div className="text-xs text-zinc-500">Tempo trabalhado</div>
           </div>
           <div className="space-y-4">
             <div>
               <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><Gauge size={14} /> KM Final</label>
-              <input type="number" value={endKm} onChange={e => setEndKm(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="Ex: 52300" />
+              <input type="number" value={endKm} onChange={e => setEndKm(e.target.value)} className="input" placeholder="Ex: 52300" />
             </div>
             <div>
               <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><DollarSign size={14} /> Total que fiz no dia (R$)</label>
-              <input type="number" step="0.01" value={totalRevenue} onChange={e => setTotalRevenue(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+              <input type="number" step="0.01" value={totalRevenue} onChange={e => setTotalRevenue(e.target.value)} className="input" placeholder="0,00" />
             </div>
             <div>
               <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><Wallet size={14} /> Recebi em dinheiro (R$)</label>
-              <input type="number" step="0.01" value={cashAmount} onChange={e => setCashAmount(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+              <input type="number" step="0.01" value={cashAmount} onChange={e => setCashAmount(e.target.value)} className="input" placeholder="0,00" />
             </div>
-            <div className="bg-zinc-800/50 rounded-lg p-3 flex items-center justify-between">
+            <div className="bg-white/5 rounded-xl p-3 flex items-center justify-between">
               <span className="text-sm text-zinc-400">Ficou na conta da Uber</span>
               <span className="text-lg font-semibold text-emerald-400">
                 {totalRevenue && cashAmount
@@ -185,14 +185,14 @@ export default function JourneyPage() {
             </div>
             <div>
               <label className="text-sm text-zinc-400 mb-1 flex items-center gap-2"><PiggyBank size={14} /> Caixa em dinheiro (R$)</label>
-              <input type="number" step="0.01" value={cashOnHand} onChange={e => setCashOnHand(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="0,00" />
+              <input type="number" step="0.01" value={cashOnHand} onChange={e => setCashOnHand(e.target.value)} className="input" placeholder="0,00" />
             </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={handleEnd} disabled={loading} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all cursor-pointer disabled:opacity-50">
+            <button onClick={handleEnd} disabled={loading} className="btn-danger flex-1 disabled:opacity-50">
               {loading ? 'Finalizando...' : 'Finalizar Dia'}
             </button>
-            <button onClick={() => setState('active')} className="py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-all cursor-pointer text-sm">Voltar</button>
+            <button onClick={() => setState('active')} className="btn-ghost text-sm">Voltar</button>
           </div>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function JourneyPage() {
   if (state === 'active' || state === 'paused') {
     return (
       <div className="max-w-lg mx-auto space-y-6">
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-8 text-center space-y-6">
+        <div className="card p-8 text-center space-y-6">
           <h1 className="text-2xl font-bold text-zinc-100">Jornada em Andamento</h1>
           <div className={`text-6xl font-bold font-mono ${state === 'paused' ? 'text-zinc-500' : 'text-amber-400'}`}>
             {displayTime()}
@@ -215,18 +215,18 @@ export default function JourneyPage() {
           </div>
           <div className="flex gap-3 justify-center">
             {state === 'active' ? (
-              <button onClick={handlePause} className="flex items-center gap-2 px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer">
+              <button onClick={handlePause} className="btn-primary">
                 <Pause size={18} /> Pausar
               </button>
             ) : (
-              <button onClick={handleResume} className="flex items-center gap-2 px-6 py-3 bg-emerald-400 hover:bg-emerald-500 text-black font-semibold rounded-lg transition-all cursor-pointer">
+              <button onClick={handleResume} className="btn bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 text-black shadow-[0_4px_20px_-4px_rgba(52,211,153,0.5)] hover:brightness-110">
                 <Play size={18} /> Retomar
               </button>
             )}
-            <button onClick={() => setState('ending')} className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all cursor-pointer">
+            <button onClick={() => setState('ending')} className="btn-danger">
               <Flag size={18} /> Encerrar
             </button>
-            <button onClick={handleCancel} className="flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-lg transition-all cursor-pointer text-sm">
+            <button onClick={handleCancel} className="btn-ghost text-sm">
               <XCircle size={16} /> Cancelar
             </button>
           </div>
@@ -238,12 +238,12 @@ export default function JourneyPage() {
   return (
     <div className="max-w-md mx-auto space-y-6 text-center">
       <h1 className="text-2xl font-bold text-zinc-100">Iniciar Jornada</h1>
-      <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-5">
+      <div className="card p-6 space-y-5">
         <div className="text-left">
           <label className="text-sm text-zinc-400 mb-1 block">KM Inicial</label>
-          <input type="number" value={startKm} onChange={e => setStartKm(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" placeholder="Ex: 50000" />
+          <input type="number" value={startKm} onChange={e => setStartKm(e.target.value)} className="input" placeholder="Ex: 50000" />
         </div>
-        <button onClick={handleStart} disabled={loading} className="w-full py-4 bg-amber-400 hover:bg-amber-500 text-black font-bold text-lg rounded-xl transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-3">
+        <button onClick={handleStart} disabled={loading} className="btn-primary w-full py-4 text-lg disabled:opacity-50">
           <Play size={24} /> {loading ? 'Iniciando...' : 'Iniciar Dia'}
         </button>
       </div>
@@ -253,7 +253,7 @@ export default function JourneyPage() {
 
 function ResumoBox({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="bg-zinc-800/50 rounded-lg p-4">
+    <div className="bg-white/5 rounded-xl p-4 transition-colors group">
       <div className="flex items-center gap-2 mb-1">
         <Icon size={14} className="text-zinc-500" />
         <p className="text-xs text-zinc-500">{label}</p>

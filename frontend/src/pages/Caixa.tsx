@@ -42,61 +42,73 @@ export default function Caixa() {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'><h1 className='text-2xl font-bold text-zinc-100'>Caixa</h1>
+    <div className='space-y-6 animate-slide-up'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <h1 className='text-2xl font-bold text-zinc-100 tracking-tight'>Caixa</h1>
         <div className='flex gap-2'>
-          <button onClick={() => { setForm({type:'expense',category:'sangria',amount:'',description:'',date:new Date().toISOString().split('T')[0]}); setShowForm(true); }} className='flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold rounded-lg transition-all cursor-pointer text-sm'><Home size={16} /> Sangria</button>
-          <button onClick={() => setShowForm(true)} className='flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer text-sm'><Plus size={16} /> Nova</button>
+          <button onClick={() => { setForm({type:'expense',category:'sangria',amount:'',description:'',date:new Date().toISOString().split('T')[0]}); setShowForm(true); }} className='btn-danger'><Home size={16} /> Sangria</button>
+          <button onClick={() => setShowForm(true)} className='btn-primary'><Plus size={16} /> Nova</button>
         </div>
       </div>
       <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
-        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><Banknote size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Saldo Total</p><p className='text-2xl font-bold text-zinc-100'>R\$ {balance.balance.toFixed(2)}</p></div>
-        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center'><Smartphone size={20} className='text-blue-400' /></div></div><p className='text-xs text-zinc-500'>Saldo Conta Uber</p><p className='text-2xl font-bold text-blue-400'>R\$ {balance.uber_balance.toFixed(2)}</p></div>
-        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><Wallet size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Saldo em Dinheiro</p><p className='text-2xl font-bold text-emerald-400'>R\$ {balance.cash_balance.toFixed(2)}</p></div>
-        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center'><Home size={20} className='text-amber-400' /></div></div><p className='text-xs text-zinc-500'>Sangria (guardado)</p><p className='text-2xl font-bold text-amber-400'>R\$ {(balance.sangria ?? 0).toFixed(2)}</p></div>
-        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center'><ArrowUpRight size={20} className='text-emerald-400' /></div></div><p className='text-xs text-zinc-500'>Entradas</p><p className='text-2xl font-bold text-emerald-400'>R\$ {balance.incomes.toFixed(2)}</p></div>
-        <div className='bg-zinc-900 rounded-xl border border-zinc-800 p-5'><div className='flex items-center gap-3 mb-3'><div className='w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center'><ArrowDownRight size={20} className='text-red-400' /></div></div><p className='text-xs text-zinc-500'>Saidas</p><p className='text-2xl font-bold text-red-400'>R\$ {balance.expenses.toFixed(2)}</p></div>
+        <Stat icon={Banknote} label='Saldo Total' value={`R$ ${balance.balance.toFixed(2)}`} color='text-zinc-100' gradient='from-emerald-400 to-teal-500' />
+        <Stat icon={Smartphone} label='Saldo Conta Uber' value={`R$ ${balance.uber_balance.toFixed(2)}`} color='text-blue-400' gradient='from-blue-400 to-indigo-500' />
+        <Stat icon={Wallet} label='Saldo em Dinheiro' value={`R$ ${balance.cash_balance.toFixed(2)}`} color='text-emerald-400' gradient='from-emerald-400 to-green-500' />
+        <Stat icon={Home} label='Sangria (guardado)' value={`R$ ${(balance.sangria ?? 0).toFixed(2)}`} color='text-amber-400' gradient='from-amber-400 to-orange-500' />
+        <Stat icon={ArrowUpRight} label='Entradas' value={`R$ ${balance.incomes.toFixed(2)}`} color='text-emerald-400' gradient='from-emerald-400 to-teal-500' />
+        <Stat icon={ArrowDownRight} label='Saidas' value={`R$ ${balance.expenses.toFixed(2)}`} color='text-red-400' gradient='from-red-400 to-rose-500' />
       </div>
-      {showForm && <form onSubmit={handleSubmit} className='bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4'>
+      {showForm && <form onSubmit={handleSubmit} className='card p-6 space-y-4 animate-slide-up'>
         <div className='grid grid-cols-2 gap-4'>
           <div><label className='text-sm text-zinc-400 mb-1 block'>Tipo</label>
-            <select value={form.type} onChange={e=>setForm({...form,type:e.target.value})} className='w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100'>
+            <select value={form.type} onChange={e=>setForm({...form,type:e.target.value})} className='input'>
               <option value='income'>Entrada</option><option value='expense'>Saida</option>
             </select></div>
           <div><label className='text-sm text-zinc-400 mb-1 block'>Categoria</label>
-            <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className='w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100'>
+            <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className='input'>
               {formCategories.map(c=><option key={c} value={c}>{catLabels[c]}</option>)}
             </select></div>
         </div>
         <div className='grid grid-cols-2 gap-4'>
-          <div><label className='text-sm text-zinc-400 mb-1 block'>Valor</label><input type='number' step='0.01' value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} required className='w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100' /></div>
-          <div><label className='text-sm text-zinc-400 mb-1 block'>Data</label><input type='date' value={form.date} onChange={e=>setForm({...form,date:e.target.value})} required className='w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100' /></div>
+          <div><label className='text-sm text-zinc-400 mb-1 block'>Valor</label><input type='number' step='0.01' value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})} required className='input' /></div>
+          <div><label className='text-sm text-zinc-400 mb-1 block'>Data</label><input type='date' value={form.date} onChange={e=>setForm({...form,date:e.target.value})} required className='input' /></div>
         </div>
-        <div><label className='text-sm text-zinc-400 mb-1 block'>Descricao</label><input type='text' value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className='w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100' /></div>
-        <div className='flex gap-3'><button type='submit' className='px-6 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer'>Salvar</button>
-          <button type='button' onClick={()=>setShowForm(false)} className='px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-all cursor-pointer'>Cancelar</button></div>
+        <div><label className='text-sm text-zinc-400 mb-1 block'>Descricao</label><input type='text' value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className='input' /></div>
+        <div className='flex gap-3'><button type='submit' className='btn-primary'>Salvar</button>
+          <button type='button' onClick={()=>setShowForm(false)} className='btn-ghost'>Cancelar</button></div>
       </form>}
-      <div className='bg-zinc-900 rounded-xl border border-zinc-800'>
-        <div className='p-4 border-b border-zinc-800'><h2 className='text-sm font-medium text-zinc-100'>Historico</h2></div>
-        <div className='divide-y divide-zinc-800'>
-          {(transactions || []).map((t) => (
-            <div key={t.id} className='flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors group'>
+      <div className='card'>
+        <div className='p-4 border-b border-white/5'><h2 className='text-sm font-medium text-zinc-100'>Historico</h2></div>
+        <div className='divide-y divide-zinc-800/60'>
+          {(Array.isArray(transactions) ? transactions : []).map((t) => (
+            <div key={t.id} className='flex items-center justify-between p-4 hover:bg-white/5 transition-colors group'>
               <div className='flex items-center gap-3'>
-                <div className={'w-8 h-8 rounded-lg flex items-center justify-center ' + (t.type==='income' ? 'bg-emerald-500/20' : 'bg-red-500/20')}>
+                <div className={'w-8 h-8 rounded-lg flex items-center justify-center ' + (t.type==='income' ? 'bg-emerald-500/15' : 'bg-red-500/15')}>
                   {t.type==='income' ? <ArrowUpRight size={16} className='text-emerald-400' /> : <ArrowDownRight size={16} className='text-red-400' />}
                 </div>
                 <div><p className='text-sm text-zinc-100'>{catLabels[t.category]||t.category}</p><p className='text-xs text-zinc-500'>{t.description||''}</p></div>
               </div>
               <div className='flex items-center gap-3'>
-                <div className='text-right'><p className={'text-sm font-medium ' + (t.type==='income' ? 'text-emerald-400' : 'text-red-400')}>{t.type==='income' ? '+' : '-'}R\$ {Number(t.amount).toFixed(2)}</p><p className='text-xs text-zinc-500'>{new Date(t.date).toLocaleDateString('pt-BR')}</p></div>
-                <button onClick={() => handleDelete(t.id)} className='opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded cursor-pointer' title='Excluir'><Trash2 size={14} className='text-red-400' /></button>
+                <div className='text-right'><p className={'text-sm font-medium ' + (t.type==='income' ? 'text-emerald-400' : 'text-red-400')}>{t.type==='income' ? '+' : '-'}R$ {Number(t.amount).toFixed(2)}</p><p className='text-xs text-zinc-500'>{new Date(t.date).toLocaleDateString('pt-BR')}</p></div>
+                <button onClick={() => handleDelete(t.id)} className='opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/15 rounded cursor-pointer' title='Excluir'><Trash2 size={14} className='text-red-400' /></button>
               </div>
             </div>
           ))}
-          {transactions.length===0 && <p className='text-zinc-500 text-sm p-4 text-center'>Nenhuma transacao</p>}
+          {(!Array.isArray(transactions) || transactions.length===0) && <p className='text-zinc-500 text-sm p-4 text-center'>Nenhuma transacao</p>}
         </div>
       </div>
     </div>
   );
 }
 
+function Stat({ icon: Icon, label, value, color, gradient }: { icon: any; label: string; value: string; color: string; gradient: string }) {
+  return (
+    <div className='card card-hover p-5 group'>
+      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 shadow-lg transition-transform group-hover:scale-110 group-hover:-rotate-3`}>
+        <Icon size={20} className='text-zinc-950' />
+      </div>
+      <p className='text-xs text-zinc-500'>{label}</p>
+      <p className={'text-xl font-bold ' + color}>{value}</p>
+    </div>
+  );
+}

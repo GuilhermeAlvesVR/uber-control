@@ -48,20 +48,20 @@ export default function Goals() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-zinc-100">Metas</h1>
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer text-sm"><Plus size={16} /> Nova Meta</button>
+        <button onClick={() => setShowForm(true)} className="btn-primary"><Plus size={16} /> Nova Meta</button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="card p-6 space-y-4 animate-slide-up">
           <div className="grid grid-cols-2 gap-4">
             <div><label className="text-sm text-zinc-400 mb-1 block">Tipo</label>
-              <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100">
+              <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className="input">
                 <option value="daily">Diaria</option><option value="weekly">Semanal</option><option value="monthly">Mensal</option>
               </select></div>
-            <div><label className="text-sm text-zinc-400 mb-1 block">Valor Meta (R$)</label><input type="number" step="0.01" value={form.target_amount} onChange={e => setForm({ ...form, target_amount: e.target.value })} required className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" /></div>
+            <div><label className="text-sm text-zinc-400 mb-1 block">Valor Meta (R$)</label><input type="number" step="0.01" value={form.target_amount} onChange={e => setForm({ ...form, target_amount: e.target.value })} required className="input" /></div>
           </div>
-          <div className="flex gap-3"><button type="submit" className="px-6 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer">Salvar</button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-all cursor-pointer">Cancelar</button></div>
+          <div className="flex gap-3"><button type="submit" className="btn-primary">Salvar</button>
+            <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">Cancelar</button></div>
         </form>
       )}
 
@@ -69,9 +69,9 @@ export default function Goals() {
         {(Array.isArray(goals) ? goals : []).map((goal: any) => {
           const pct = getProgress(goal.type);
           return (
-            <div key={goal.id} className="bg-zinc-900 rounded-xl border border-zinc-800 p-5">
+            <div key={goal.id} className="card card-hover p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center"><Crosshair size={20} className="text-amber-400" /></div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg"><Crosshair size={20} className="text-zinc-950" /></div>
                 <div><p className="text-sm font-medium text-zinc-100">Meta {labels[goal.type]}</p><p className="text-xs text-zinc-500">R$ {parseFloat(goal.target_amount).toFixed(2)}</p></div>
               </div>
               <div className="w-full bg-zinc-800 rounded-full h-3">

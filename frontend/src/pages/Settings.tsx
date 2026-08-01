@@ -36,34 +36,34 @@ export default function Settings() {
       <h1 className="text-2xl font-bold text-zinc-100">Configuracoes</h1>
 
       <div className="space-y-4">
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
-          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center"><DollarSign size={20} className="text-amber-400" /></div>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg"><DollarSign size={20} className="text-zinc-950" /></div>
             <div><p className="text-sm font-medium text-zinc-100">Preco da Gasolina</p><p className="text-xs text-zinc-500">Valor medio por litro</p></div></div>
           <div className="relative"><span className="absolute left-4 top-3 text-zinc-500">R$</span>
-            <input type="number" step="0.01" value={gasPrice} onChange={e => setGasPrice(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" /></div>
+            <input type="number" step="0.01" value={gasPrice} onChange={e => setGasPrice(e.target.value)} className="input !pl-10" /></div>
         </div>
 
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
-          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center"><Target size={20} className="text-emerald-400" /></div>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg"><Target size={20} className="text-zinc-950" /></div>
             <div><p className="text-sm font-medium text-zinc-100">Metas</p><p className="text-xs text-zinc-500">Defina seus objetivos</p></div></div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-sm text-zinc-400 mb-1 block">Meta Diaria (R$)</label><input type="number" value={dailyGoal} onChange={e => setDailyGoal(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" /></div>
-            <div><label className="text-sm text-zinc-400 mb-1 block">Meta Mensal (R$)</label><input type="number" value={monthlyGoal} onChange={e => setMonthlyGoal(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100" /></div>
+            <div><label className="text-sm text-zinc-400 mb-1 block">Meta Diaria (R$)</label><input type="number" value={dailyGoal} onChange={e => setDailyGoal(e.target.value)} className="input" /></div>
+            <div><label className="text-sm text-zinc-400 mb-1 block">Meta Mensal (R$)</label><input type="number" value={monthlyGoal} onChange={e => setMonthlyGoal(e.target.value)} className="input" /></div>
           </div>
         </div>
 
-        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 space-y-4">
-          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center"><Layers size={20} className="text-violet-400" /></div>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg"><Layers size={20} className="text-zinc-950" /></div>
             <div><p className="text-sm font-medium text-zinc-100">Categorias</p><p className="text-xs text-zinc-500">Gerenciar categorias de despesas</p></div></div>
           <div className="flex flex-wrap gap-2">
             {['Combustivel','Alimentacao','Lavagem','Manutencao','Seguro','Pedagio','Uber','Particular','Outros'].map(c => (
-              <span key={c} className="px-3 py-1.5 bg-zinc-800 rounded-lg text-xs text-zinc-300">{c}</span>
+              <span key={c} className="chip">{c}</span>
             ))}
           </div>
         </div>
       </div>
 
-      <button onClick={handleSave} className="w-full py-2.5 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer">
+      <button onClick={handleSave} className="btn-primary w-full">
         Salvar Configuracoes
       </button>
     </div>

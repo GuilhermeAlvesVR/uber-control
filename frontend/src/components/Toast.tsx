@@ -33,10 +33,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
         {toasts.map(t => (
-          <div key={t.id} className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium animate-slide-in ${t.type === 'success' ? 'bg-emerald-900/95 border-emerald-700 text-emerald-100' : 'bg-red-900/95 border-red-700 text-red-100'}`}>
-            {t.type === 'success' ? <CheckCircle size={18} className="shrink-0" /> : <AlertCircle size={18} className="shrink-0" />}
+          <div
+            key={t.id}
+            className={`animate-slide-in flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl border text-sm font-medium ${
+              t.type === 'success'
+                ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-100 shadow-emerald-500/10'
+                : 'bg-red-950/90 border-red-500/30 text-red-100 shadow-red-500/10'
+            }`}
+          >
+            {t.type === 'success' ? <CheckCircle size={18} className="shrink-0 text-emerald-400" /> : <AlertCircle size={18} className="shrink-0 text-red-400" />}
             <span className="flex-1">{t.message}</span>
-            <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))} className="opacity-60 hover:opacity-100 cursor-pointer"><X size={16} /></button>
+            <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))} className="opacity-60 hover:opacity-100 cursor-pointer transition-opacity"><X size={16} /></button>
           </div>
         ))}
       </div>

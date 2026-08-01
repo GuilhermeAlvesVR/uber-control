@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.4s ease-out;
+  --animate-scale-in: scale-in 0.25s ease-out;
+}
+
 :root {
   font-family: 'Inter', system-ui, sans-serif;
+}
+
+html {
+  height: -webkit-fill-available;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -9,35 +21,92 @@ body {
   min-height: 100vh;
   min-height: -webkit-fill-available;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #09090b;
+  color: #f4f4f5;
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% -20%, rgba(245, 158, 11, 0.10), transparent),
+    radial-gradient(ellipse 50% 40% at 110% 10%, rgba(168, 85, 247, 0.07), transparent),
+    radial-gradient(ellipse 40% 40% at -10% 100%, rgba(56, 189, 248, 0.05), transparent);
+  background-attachment: fixed;
 }
 
-html {
-  height: -webkit-fill-available;
+::selection {
+  background: rgba(251, 191, 36, 0.28);
+  color: #fff;
 }
 
 input, select, textarea, button {
   font-size: 16px;
 }
 
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+*:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.55);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
 @keyframes slide-in {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
-
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #09090b;
-}
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+.animate-slide-in { animation: slide-in 0.3s ease-out; }
+
+@layer components {
+  .card {
+    @apply bg-zinc-900/70 backdrop-blur-sm border border-white/5 rounded-2xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)] transition-all;
+  }
+  .card-hover {
+    @apply hover:border-zinc-700/50 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)];
+  }
+  .input {
+    @apply w-full px-4 py-2.5 bg-zinc-800/70 border border-zinc-700/70 rounded-xl text-zinc-100 placeholder-zinc-500 transition-all;
+  }
+  .input:focus {
+    @apply outline-none border-amber-400/40 ring-2 ring-amber-400/10;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all cursor-pointer select-none active:scale-[0.98];
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all cursor-pointer select-none active:scale-[0.98] px-5 py-2.5 text-sm bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-[0_4px_20px_-4px_rgba(245,158,11,0.5)] hover:shadow-[0_6px_28px_-4px_rgba(245,158,11,0.7)] hover:brightness-110;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all cursor-pointer select-none active:scale-[0.98] px-4 py-2.5 text-sm bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700/80 hover:text-zinc-100;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all cursor-pointer select-none active:scale-[0.98] px-4 py-2.5 text-sm bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-800/80 border border-zinc-700/50 rounded-full text-xs text-zinc-300;
+  }
 }

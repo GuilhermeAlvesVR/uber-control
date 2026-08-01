@@ -48,20 +48,20 @@ export default function Reports() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-zinc-100">Relatorios</h1>
         <div className="flex gap-2">
-          <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg transition-all cursor-pointer text-sm"><FileText size={16} /> Exportar PDF</button>
-          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-lg transition-all cursor-pointer text-sm"><Download size={16} /> Exportar CSV</button>
+          <button onClick={exportPDF} className="btn-ghost"><FileText size={16} /> Exportar PDF</button>
+          <button onClick={exportCSV} className="btn-primary"><Download size={16} /> Exportar CSV</button>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 bg-zinc-900 rounded-xl border border-zinc-800 p-4">
+      <div className="card p-4 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2"><Calendar size={16} className="text-zinc-400" />
-          <input type="date" value={start} onChange={e => setStart(e.target.value)} className="bg-zinc-800 px-3 py-1.5 rounded-lg text-zinc-100 text-sm border border-zinc-700" /></div>
+          <input type="date" value={start} onChange={e => setStart(e.target.value)} className="bg-zinc-800/70 border border-zinc-700/70 rounded-xl px-3 py-1.5 text-zinc-100 text-sm transition-all focus:outline-none focus:border-amber-400/40" /></div>
         <span className="text-zinc-500">ate</span>
-        <input type="date" value={end} onChange={e => setEnd(e.target.value)} className="bg-zinc-800 px-3 py-1.5 rounded-lg text-zinc-100 text-sm border border-zinc-700" />
+        <input type="date" value={end} onChange={e => setEnd(e.target.value)} className="bg-zinc-800/70 border border-zinc-700/70 rounded-xl px-3 py-1.5 text-zinc-100 text-sm transition-all focus:outline-none focus:border-amber-400/40" />
       </div>
 
       {data && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up">
           <ReportCard label="Receita Total" value={data.total_revenue} color="text-emerald-400" />
           <ReportCard label="Despesas" value={data.total_expenses} color="text-red-400" />
           <ReportCard label="Lucro Liquido" value={data.net_profit} color="text-amber-400" />
@@ -78,7 +78,7 @@ export default function Reports() {
 
 function ReportCard({ label, value, color, suffix = '' }: { label: string; value: number; color: string; suffix?: string }) {
   return (
-    <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-4">
+    <div className="card card-hover p-4 group">
       <p className="text-xs text-zinc-500 mb-1">{label}</p>
       <p className={'text-lg font-semibold ' + color}>R$ {value.toFixed(2)}{suffix}</p>
     </div>
