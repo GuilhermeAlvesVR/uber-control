@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast';
 import { Skeleton, EmptyState, PageHeader } from '../components/ui';
 import type { PrivateQuote } from '../types';
 
-const fmt = (v: number | null | undefined) => 'R$ ' + (v ?? 0).toFixed(2).replace('.', ',');
+const fmt = (v: number | string | null | undefined) => 'R$ ' + (Number(v) || 0).toFixed(2).replace('.', ',');
 
 export default function Quotes() {
   const { toast } = useToast();
