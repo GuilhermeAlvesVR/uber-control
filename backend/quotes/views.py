@@ -3,16 +3,18 @@ from rest_framework.response import Response
 from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from io import BytesIO
+import base64
 from datetime import datetime
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from PIL import Image as PILImage
 
 from .models import PrivateQuote
 from .serializers import PrivateQuoteSerializer
-from .services import geocode, route, render_map
+from .services import geocode, route, render_map, TILE_ATTRIBUTION
 
 User = get_user_model()
 
@@ -121,26 +123,44 @@ class QuotePDFView(views.APIView):
 
         elements = []
 
-        header_rows = []
         driver_name = u.name or 'Motorista'
-        header_rows.append([Paragraph('Orcamento de Corrida Particular', title_style)])
-        contact_parts = [driver_name]
+
+        photo_img = None
+        if vehicle and vehicle.photo:
+            try:
+                raw = base64.b64decode(vehicle.photo.split(',', 1)[-1])
+                with PILImage.open(BytesIO(raw)) as im:
+                    pw, ph = im.size
+                max_w, max_h = 4.8 * cm, 3.4 * cm
+                ratio = min(max_w / pw, max_h / ph)
+                photo_img = Image(BytesIO(raw), width=pw * ratio, height=ph * ratio)
+            except Exception:
+                photo_img = None
+
+        header_rows = []
+        left_cell = []
+        left_cell.append(Paragraph('Orcamento de Corrida Particular', title_style))
+        contact_parts = [f'<b>{driver_name}</b>']
         if phone:
-            contact_parts.append(f'{phone}')
+            contact_parts.append(f'<b>{phone}</b>')
         if vehicle:
             contact_parts.append(f'{vehicle.model} {vehicle.year} - {vehicle.plate}'.strip())
-        header_rows.append([Paragraph('  |  '.join(contact_parts), sub_style)])
-        header_rows.append([Paragraph(f'Cliente: {quote.client_name}', sub_style)])
-        header_rows.append([Paragraph(f'Data: {quote.created_at.strftime("%d/%m/%Y %H:%M")}', sub_style)])
-        header_table = Table(header_rows, colWidths=[17*cm])
+        left_cell.append(Paragraph('  |  '.join(contact_parts), sub_style))
+        left_cell.append(Paragraph(f'Cliente: <b>{quote.client_name}</b>', sub_style))
+        left_cell.append(Paragraph(f'Data: {quote.created_at.strftime("%d/%m/%Y %H:%M")}', sub_style))
+        header_rows.append([left_cell, photo_img if photo_img else ''])
+        header_table = Table(header_rows, colWidths=[12.5 * cm, 4.5 * cm])
         header_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FBBF24')),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
             ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#FBBF24')),
         ]))
         elements.append(header_table)
-        elements.append(Spacer(1, 0.7*cm))
+        elements.append(Spacer(1, 0.7 * cm))
 
         if map_bytes:
             try:
@@ -178,6 +198,10 @@ class QuotePDFView(views.APIView):
             footer.append(Paragraph(f'{vehicle.model} {vehicle.year} - {vehicle.plate}', sub_style))
         for item in footer:
             elements.append(item)
+
+        if map_bytes:
+            elements.append(Spacer(1, 0.6 * cm))
+            elements.append(Paragraph(TILE_ATTRIBUTION, sub_style))
 
         doc.build(elements)
         buffer.seek(0)

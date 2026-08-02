@@ -6,6 +6,7 @@ class Vehicle(models.Model):
     model = models.CharField(max_length=100)
     year = models.IntegerField()
     plate = models.CharField(max_length=10)
+    photo = models.TextField(blank=True, null=True, help_text="Base64 data URL da foto do veiculo")
     avg_consumption = models.DecimalField(max_digits=5, decimal_places=2, help_text="km/l")
     next_oil_change_km = models.IntegerField(null=True, blank=True)
     next_revision_km = models.IntegerField(null=True, blank=True)

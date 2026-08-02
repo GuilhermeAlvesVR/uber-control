@@ -4,7 +4,8 @@ from decimal import Decimal
 
 NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 OSRM_URL = 'https://router.project-osrm.org/route/v1/driving'
-TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+TILE_URL = 'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png'
+TILE_ATTRIBUTION = 'Map tiles: CARTO (CC BY 3.0) - OpenStreetMap (ODbL)'
 USER_AGENT = 'ControleUberQuote/1.0'
 
 
@@ -54,16 +55,17 @@ def render_map(origin, destination, geometry):
     try:
         from staticmap import StaticMap, CircleMarker, Line
 
-        m = StaticMap(760, 420, padding_x=40, padding_y=40, url_template=TILE_URL)
+        m = StaticMap(1400, 780, padding_x=60, padding_y=60, url_template=TILE_URL)
 
         if geometry:
             coords = [(lon, lat) for lon, lat in geometry]
-            m.add_line(Line(coords, '#3B82F6', 5))
+            m.add_line(Line(coords, '#FFFFFF', 14))
+            m.add_line(Line(coords, '#2563EB', 8))
 
-        origin_marker = CircleMarker((float(origin['lon']), float(origin['lat'])), '#F59E0B', 14)
-        origin_outline = CircleMarker((float(origin['lon']), float(origin['lat'])), '#FFFFFF', 20)
-        dest_marker = CircleMarker((float(destination['lon']), float(destination['lat'])), '#EF4444', 14)
-        dest_outline = CircleMarker((float(destination['lon']), float(destination['lat'])), '#FFFFFF', 20)
+        origin_outline = CircleMarker((float(origin['lon']), float(origin['lat'])), '#FFFFFF', 34)
+        origin_marker = CircleMarker((float(origin['lon']), float(origin['lat'])), '#F59E0B', 24)
+        dest_outline = CircleMarker((float(destination['lon']), float(destination['lat'])), '#FFFFFF', 34)
+        dest_marker = CircleMarker((float(destination['lon']), float(destination['lat'])), '#DC2626', 24)
 
         m.add_marker(origin_outline)
         m.add_marker(origin_marker)

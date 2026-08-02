@@ -9,6 +9,7 @@ export interface Vehicle {
   model: string;
   year: number;
   plate: string;
+  photo?: string | null;
   avg_consumption: number;
   next_oil_change_km: number | null;
   next_revision_km: number | null;
