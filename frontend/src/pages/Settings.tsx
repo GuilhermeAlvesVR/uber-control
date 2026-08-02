@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DollarSign, Target, Layers } from 'lucide-react';
+import { DollarSign, Target, Layers, Phone } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import api from '../services/api';
 
@@ -8,6 +8,7 @@ export default function Settings() {
   const [gasPrice, setGasPrice] = useState('5.89');
   const [dailyGoal, setDailyGoal] = useState('200');
   const [monthlyGoal, setMonthlyGoal] = useState('6000');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export default function Settings() {
       setGasPrice(r.data.gas_price?.toString() || '5.89');
       setDailyGoal(r.data.daily_goal?.toString() || '200');
       setMonthlyGoal(r.data.monthly_goal?.toString() || '6000');
+      setPhone(r.data.phone || '');
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -24,6 +26,7 @@ export default function Settings() {
         gas_price: parseFloat(gasPrice),
         daily_goal: parseFloat(dailyGoal),
         monthly_goal: parseFloat(monthlyGoal),
+        phone: phone || null,
       });
       toast('Configuracoes salvas!');
     } catch { toast('Erro ao salvar configuracoes', 'error'); }
@@ -50,6 +53,13 @@ export default function Settings() {
             <div><label className="text-sm text-zinc-400 mb-1 block">Meta Diaria (R$)</label><input type="number" value={dailyGoal} onChange={e => setDailyGoal(e.target.value)} className="input" /></div>
             <div><label className="text-sm text-zinc-400 mb-1 block">Meta Mensal (R$)</label><input type="number" value={monthlyGoal} onChange={e => setMonthlyGoal(e.target.value)} className="input" /></div>
           </div>
+        </div>
+
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-lg"><Phone size={20} className="text-zinc-950" /></div>
+            <div><p className="text-sm font-medium text-zinc-100">Telefone para contato</p><p className="text-xs text-zinc-500">Aparece no cabecalho do PDF de orcamentos</p></div></div>
+          <div className="relative"><span className="absolute left-4 top-3 text-zinc-500"><Phone size={15} /></span>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="input !pl-10" placeholder="(11) 99999-9999" /></div>
         </div>
 
         <div className="card p-6 space-y-4">

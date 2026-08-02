@@ -9,6 +9,7 @@ import Maintenance from './pages/Maintenance';
 import Expenses from './pages/Expenses';
 import Goals from './pages/Goals';
 import Reports from './pages/Reports';
+import Quotes from './pages/Quotes';
 import Vehicle from './pages/Vehicle';
 import Settings from './pages/Settings';
 
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/despesas" element={<ErrorBoundary><Expenses /></ErrorBoundary>} />
           <Route path="/metas" element={<ErrorBoundary><Goals /></ErrorBoundary>} />
           <Route path="/relatorios" element={<ErrorBoundary><Reports /></ErrorBoundary>} />
+          <Route path="/orcamentos" element={<ErrorBoundary><Quotes /></ErrorBoundary>} />
           <Route path="/veiculo" element={<ErrorBoundary><Vehicle /></ErrorBoundary>} />
           <Route path="/configuracoes" element={<ErrorBoundary><Settings /></ErrorBoundary>} />
         </Route>

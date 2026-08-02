@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Navigation, Wallet, Fuel, Wrench,
-  Receipt, Target, FileText, Car, Settings, ChevronLeft, ChevronRight, Menu, X, Gauge
+  Receipt, Target, FileText, Car, Settings, ChevronLeft, ChevronRight, Menu, X, Gauge, ClipboardList
 } from 'lucide-react';
 
 const menu = [
@@ -13,6 +13,7 @@ const menu = [
   { to: '/manutencoes', icon: Wrench, label: 'Manutencoes' },
   { to: '/despesas', icon: Receipt, label: 'Despesas' },
   { to: '/metas', icon: Target, label: 'Metas' },
+  { to: '/orcamentos', icon: ClipboardList, label: 'Orcamentos' },
   { to: '/relatorios', icon: FileText, label: 'Relatorios' },
   { to: '/veiculo', icon: Car, label: 'Meu Veiculo' },
   { to: '/configuracoes', icon: Settings, label: 'Configuracoes' },

@@ -1,0 +1,164 @@
+from rest_framework import generics, views, status
+from rest_framework.response import Response
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+from io import BytesIO
+from datetime import datetime
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+from .models import PrivateQuote
+from .serializers import PrivateQuoteSerializer
+from .services import geocode, route, render_map
+
+User = get_user_model()
+
+
+def _get_user(request):
+    if request.user.is_authenticated:
+        return request.user
+    user, _ = User.objects.get_or_create(id=1, defaults={'email': 'default@uber.com', 'name': 'Motorista'})
+    return user
+
+
+class QuoteListCreateView(generics.ListCreateAPIView):
+    serializer_class = PrivateQuoteSerializer
+
+    def get_queryset(self):
+        return PrivateQuote.objects.filter(user=_get_user(self.request))
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        origin = data.get('origin', '')
+        destination = data.get('destination', '')
+
+        origin_geo = geocode(origin)
+        dest_geo = geocode(destination)
+
+        manual_km = data.get('distance_km')
+
+        if origin_geo:
+            data['origin_lat'] = origin_geo['lat']
+            data['origin_lon'] = origin_geo['lon']
+        if dest_geo:
+            data['dest_lat'] = dest_geo['lat']
+            data['dest_lon'] = dest_geo['lon']
+
+        if origin_geo and dest_geo and not manual_km:
+            route_data = route(origin_geo, dest_geo)
+            if route_data:
+                data['distance_km'] = route_data['distance_km']
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=_get_user(self.request))
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class QuoteRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+    serializer_class = PrivateQuoteSerializer
+
+    def get_queryset(self):
+        return PrivateQuote.objects.filter(user=_get_user(self.request))
+
+
+class QuotePDFView(views.APIView):
+    def get(self, request, pk):
+        u = _get_user(request)
+        quote = PrivateQuote.objects.filter(pk=pk, user=u).first()
+        if not quote:
+            return Response({'error': 'Orcamento nao encontrado'}, status=404)
+
+        from vehicle.models import Vehicle
+        from accounts.models import UserSettings
+
+        vehicle = Vehicle.objects.filter(user=u).first()
+        settings_obj, _ = UserSettings.objects.get_or_create(user=u)
+        phone = getattr(settings_obj, 'phone', '') or ''
+
+        map_bytes = None
+        if quote.origin_lat and quote.dest_lat:
+            origin_geo = {'lat': float(quote.origin_lat), 'lon': float(quote.origin_lon)}
+            dest_geo = {'lat': float(quote.dest_lat), 'lon': float(quote.dest_lon)}
+            route_data = route(origin_geo, dest_geo) if quote.distance_km else None
+            geometry = route_data['geometry'] if route_data else None
+            map_bytes = render_map(origin_geo, dest_geo, geometry)
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.5*cm, bottomMargin=1.5*cm)
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle('QuoteTitle', parent=styles['Title'], textColor=colors.HexColor('#111827'), fontSize=20, spaceAfter=4)
+        sub_style = ParagraphStyle('QuoteSub', parent=styles['Normal'], textColor=colors.HexColor('#6B7280'), fontSize=10, spaceAfter=2)
+        label_style = ParagraphStyle('Label', parent=styles['Normal'], textColor=colors.HexColor('#6B7280'), fontSize=9)
+        value_style = ParagraphStyle('Value', parent=styles['Normal'], textColor=colors.HexColor('#111827'), fontSize=12)
+
+        elements = []
+
+        header_rows = []
+        driver_name = u.name or 'Motorista'
+        header_rows.append([Paragraph('Orcamento de Corrida Particular', title_style)])
+        contact_parts = [driver_name]
+        if phone:
+            contact_parts.append(f'{phone}')
+        if vehicle:
+            contact_parts.append(f'{vehicle.model} {vehicle.year} - {vehicle.plate}'.strip())
+        header_rows.append([Paragraph('  |  '.join(contact_parts), sub_style)])
+        header_rows.append([Paragraph(f'Cliente: {quote.client_name}', sub_style)])
+        header_rows.append([Paragraph(f'Data: {quote.created_at.strftime("%d/%m/%Y %H:%M")}', sub_style)])
+        header_table = Table(header_rows, colWidths=[17*cm])
+        header_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FBBF24')),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+        ]))
+        elements.append(header_table)
+        elements.append(Spacer(1, 0.7*cm))
+
+        if map_bytes:
+            try:
+                img = Image(BytesIO(map_bytes), width=17*cm, height=9.4*cm)
+                elements.append(img)
+                elements.append(Spacer(1, 0.5*cm))
+            except Exception:
+                pass
+
+        rows = [
+            [Paragraph('Origem', label_style), Paragraph(quote.origin, value_style)],
+            [Paragraph('Destino', label_style), Paragraph(quote.destination, value_style)],
+            [Paragraph('Distancia', label_style), Paragraph(f'{quote.distance_km} km' if quote.distance_km else '—', value_style)],
+            [Paragraph('Valor em Dinheiro / Pix', label_style), Paragraph(f'R$ {quote.price_cash_pix:.2f}'.replace('.', ','), value_style)],
+            [Paragraph('Valor no Cartao', label_style), Paragraph(f'R$ {quote.price_card:.2f}'.replace('.', ','), value_style)],
+        ]
+        if quote.notes:
+            rows.append([Paragraph('Observacoes', label_style), Paragraph(quote.notes, value_style)])
+
+        info_table = Table(rows, colWidths=[5*cm, 12*cm])
+        info_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F3F4F6')),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#D1D5DB')),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(info_table)
+        elements.append(Spacer(1, 1*cm))
+
+        footer = [Paragraph(f'Atenciosamente,', sub_style),
+                  Paragraph(f'{driver_name}{"  -  " + phone if phone else ""}', value_style)]
+        if vehicle:
+            footer.append(Paragraph(f'{vehicle.model} {vehicle.year} - {vehicle.plate}', sub_style))
+        for item in footer:
+            elements.append(item)
+
+        doc.build(elements)
+        buffer.seek(0)
+        fname = f'orcamento_{quote.id}.pdf'
+        return HttpResponse(buffer, content_type='application/pdf', headers={
+            'Content-Disposition': f'attachment; filename="{fname}"'
+        })

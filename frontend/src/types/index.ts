@@ -114,6 +114,23 @@ export interface UserSettings {
   gas_price: number;
   daily_goal: number;
   monthly_goal: number;
+  phone?: string;
+}
+
+export interface PrivateQuote {
+  id: number;
+  client_name: string;
+  origin: string;
+  destination: string;
+  origin_lat: number | null;
+  origin_lon: number | null;
+  dest_lat: number | null;
+  dest_lon: number | null;
+  distance_km: number | null;
+  price_cash_pix: number;
+  price_card: number;
+  notes: string | null;
+  created_at: string;
 }
 
 export interface PaginatedResponse<T> {
