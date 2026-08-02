@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from io import BytesIO
 import base64
+import re
 from datetime import datetime
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -205,7 +206,8 @@ class QuotePDFView(views.APIView):
 
         doc.build(elements)
         buffer.seek(0)
-        fname = f'orcamento_{quote.id}.pdf'
+        safe_name = re.sub(r'[^\w\s-]', '', quote.client_name).strip().replace(' ', '_') or 'orcamento'
+        fname = f'orcamento_{safe_name}.pdf'
         return HttpResponse(buffer, content_type='application/pdf', headers={
             'Content-Disposition': f'attachment; filename="{fname}"'
         })

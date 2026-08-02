@@ -49,13 +49,14 @@ export default function Quotes() {
     setCalculating(false);
   }
 
-  async function downloadPdf(id: number) {
+  async function downloadPdf(id: number, clientName?: string) {
     try {
       const r = await api.get(`/quotes/${id}/pdf/`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([r.data]));
+      const safeName = (clientName || 'orcamento').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') || 'orcamento';
       const a = document.createElement('a');
       a.href = url;
-      a.download = `orcamento_${id}.pdf`;
+      a.download = `orcamento_${safeName}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -85,7 +86,7 @@ export default function Quotes() {
       setForm({ client_name: '', origin: '', destination: '', distance_km: '', price_cash_pix: '', price_card: '', notes: '' });
       setPreview(null);
       load();
-      downloadPdf(r.data.id);
+      downloadPdf(r.data.id, r.data.client_name);
     } catch {
       toast('Erro ao gerar orcamento. Verifique os enderecos.', 'error');
     }
@@ -205,7 +206,7 @@ export default function Quotes() {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => downloadPdf(q.id)} className="btn-ghost !px-3 !py-2" title="Baixar PDF"><Download size={15} /></button>
+                <button onClick={() => downloadPdf(q.id, q.client_name)} className="btn-ghost !px-3 !py-2" title="Baixar PDF"><Download size={15} /></button>
                 <button onClick={() => handleDelete(q.id)} className="btn-danger !px-3 !py-2" title="Excluir"><Trash2 size={15} /></button>
               </div>
             </div>
