@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Plus, MapPin, Route, Download, Trash2, ClipboardList, Banknote, CreditCard, X } from 'lucide-react';
+import { Plus, MapPin, Route, Download, Trash2, ClipboardList, Banknote, CreditCard, X, Loader2, Clock } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { Skeleton, EmptyState, PageHeader } from '../components/ui';
 import type { PrivateQuote } from '../types';
@@ -13,6 +13,8 @@ export default function Quotes() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const [preview, setPreview] = useState<{ distance_km: number; duration_min: number } | null>(null);
   const [form, setForm] = useState({
     client_name: '', origin: '', destination: '', distance_km: '',
     price_cash_pix: '', price_card: '', notes: '',
@@ -27,6 +29,39 @@ export default function Quotes() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function calculateRoute() {
+    if (!form.origin || !form.destination) return;
+    setCalculating(true);
+    try {
+      const r = await api.post('/quotes/calculate/', {
+        origin: form.origin,
+        destination: form.destination,
+      });
+      const km = Number(r.data.distance_km) || 0;
+      setPreview({ distance_km: km, duration_min: r.data.duration_min || 0 });
+      setForm(f => ({ ...f, distance_km: km ? String(km) : f.distance_km }));
+      toast(`Rota: ${km.toFixed(1).replace('.', ',')} km`);
+    } catch {
+      setPreview(null);
+      toast('Nao foi possivel calcular a rota. Verifique os enderecos.', 'error');
+    }
+    setCalculating(false);
+  }
+
+  async function downloadPdf(id: number) {
+    try {
+      const r = await api.get(`/quotes/${id}/pdf/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([r.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `orcamento_${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch { toast('Erro ao baixar o PDF', 'error'); }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -48,8 +83,9 @@ export default function Quotes() {
       toast('Orcamento gerado com sucesso');
       setShowForm(false);
       setForm({ client_name: '', origin: '', destination: '', distance_km: '', price_cash_pix: '', price_card: '', notes: '' });
+      setPreview(null);
       load();
-      window.open(`/api/quotes/${r.data.id}/pdf/`, '_blank');
+      downloadPdf(r.data.id);
     } catch {
       toast('Erro ao gerar orcamento. Verifique os enderecos.', 'error');
     }
@@ -63,10 +99,6 @@ export default function Quotes() {
       toast('Orcamento excluido');
       load();
     } catch { toast('Erro ao excluir', 'error'); }
-  }
-
-  function downloadPdf(id: number) {
-    window.open(`/api/quotes/${id}/pdf/`, '_blank');
   }
 
   const inputCls = 'input';
@@ -87,24 +119,38 @@ export default function Quotes() {
             <h2 className="text-sm font-medium text-zinc-100">Novo Orcamento</h2>
             <button type="button" onClick={() => setShowForm(false)} className="text-zinc-500 hover:text-zinc-200 cursor-pointer"><X size={18} /></button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="text-sm text-zinc-400 mb-1 block">Nome do cliente *</label>
-              <input type="text" value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} required className={inputCls} placeholder="Ex: Maria" /></div>
-            <div><label className="text-sm text-zinc-400 mb-1 block">Distancia (km) - opcional</label>
-              <input type="number" step="0.1" value={form.distance_km} onChange={e => setForm({ ...form, distance_km: e.target.value })} className={inputCls} placeholder="Deixe vazio p/ calcular pela rota" /></div>
-          </div>
+
           <div className="grid grid-cols-1 gap-4">
             <div><label className="text-sm text-zinc-400 mb-1 block">Endereco de saida *</label>
               <div className="relative">
                 <MapPin size={16} className="absolute left-3.5 top-3 text-zinc-500" />
-                <input type="text" value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} required className={inputCls + ' !pl-9'} placeholder="Ex: Av Paulista, 1000 - Sao Paulo" />
+                <input type="text" value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} onBlur={calculateRoute} required className={inputCls + ' !pl-9'} placeholder="Ex: Av Paulista, 1000 - Sao Paulo" />
               </div></div>
             <div><label className="text-sm text-zinc-400 mb-1 block">Endereco de destino *</label>
               <div className="relative">
                 <MapPin size={16} className="absolute left-3.5 top-3 text-zinc-500" />
-                <input type="text" value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} required className={inputCls + ' !pl-9'} placeholder="Ex: Aeroporto de Congonhas" />
+                <input type="text" value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} onBlur={calculateRoute} required className={inputCls + ' !pl-9'} placeholder="Ex: Aeroporto de Congonhas" />
               </div></div>
           </div>
+
+          {calculating && (
+            <div className="flex items-center gap-2 text-sm text-zinc-400"><Loader2 size={15} className="animate-spin text-amber-400" /> Calculando rota...</div>
+          )}
+          {preview && !calculating && (
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="chip !border-amber-400/40 !text-amber-300"><Route size={13} /> {preview.distance_km.toFixed(1).replace('.', ',')} km</span>
+              <span className="chip"><Clock size={13} /> ~{preview.duration_min} min</span>
+              <span className="text-xs text-zinc-500">Edite a distancia abaixo se precisar</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label className="text-sm text-zinc-400 mb-1 block">Nome do cliente *</label>
+              <input type="text" value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} required className={inputCls} placeholder="Ex: Maria" /></div>
+            <div><label className="text-sm text-zinc-400 mb-1 block">Distancia (km)</label>
+              <input type="number" step="0.1" value={form.distance_km} onChange={e => setForm({ ...form, distance_km: e.target.value })} className={inputCls} placeholder="Calculada pela rota" /></div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label className="text-sm text-zinc-400 mb-1 block">Valor em Dinheiro / Pix (R$) *</label>
               <div className="relative">

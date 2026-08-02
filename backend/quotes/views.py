@@ -59,6 +59,29 @@ class QuoteListCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
+class QuoteCalculateView(views.APIView):
+    def post(self, request):
+        origin = request.data.get('origin', '')
+        destination = request.data.get('destination', '')
+        if not origin or not destination:
+            return Response({'error': 'Informe origem e destino'}, status=400)
+        origin_geo = geocode(origin)
+        dest_geo = geocode(destination)
+        if not origin_geo or not dest_geo:
+            return Response({'error': 'Nao foi possivel localizar os enderecos'}, status=400)
+        route_data = route(origin_geo, dest_geo)
+        if not route_data:
+            return Response({'error': 'Nao foi possivel calcular a rota'}, status=400)
+        return Response({
+            'distance_km': round(route_data['distance_km'], 2),
+            'duration_min': route_data.get('duration_min'),
+            'origin_lat': origin_geo['lat'],
+            'origin_lon': origin_geo['lon'],
+            'dest_lat': dest_geo['lat'],
+            'dest_lon': dest_geo['lon'],
+        })
+
+
 class QuoteRetrieveDestroyView(generics.RetrieveDestroyAPIView):
     serializer_class = PrivateQuoteSerializer
 

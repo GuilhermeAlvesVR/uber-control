@@ -43,6 +43,7 @@ def route(origin, destination):
         route_data = data['routes'][0]
         return {
             'distance_km': Decimal(str(round(route_data.get('distance', 0) / 1000, 2))),
+            'duration_min': int(route_data.get('duration', 0) // 60),
             'geometry': route_data.get('geometry', {}).get('coordinates', []),
         }
     except Exception:
