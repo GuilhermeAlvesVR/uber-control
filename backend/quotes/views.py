@@ -11,7 +11,13 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.utils import ImageReader
 from PIL import Image as PILImage
+
+# --- Posicionamento ajustavel da arte de fundo (altere os valores abaixo) ---
+ART_COVER = True          # True: a arte cobre a pagina toda (corta excedente). False: ajusta sem cortar.
+ART_MARGIN_PT = 0         # margem extra (pontos) ao redor da arte quando ART_COVER=False
+CONTENT_TOP_PT = 150      # distancia (pontos) do topo onde o conteudo (nome/rotas/valores) comeca a ser impresso
 
 from .models import PrivateQuote
 from .serializers import PrivateQuoteSerializer
@@ -25,6 +31,52 @@ def _get_user(request):
         return request.user
     user, _ = User.objects.get_or_create(id=1, defaults={'email': 'default@uber.com', 'name': 'Motorista'})
     return user
+
+
+def _decode_art(art):
+    """Decodifica arte base64 (data URL) em bytes. Converte PDF (1a pagina) para PNG."""
+    if not art:
+        return None
+    raw = art.split(',', 1)[-1]
+    try:
+        data = base64.b64decode(raw)
+    except Exception:
+        return None
+    if data[:5] == b'%PDF-':
+        try:
+            import fitz
+            with fitz.open(stream=data, filetype='pdf') as doc:
+                pix = doc[0].get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                return pix.tobytes('png')
+        except Exception:
+            return None
+    return data
+
+
+def _art_background(art_bytes):
+    """Retorna callable (canvas, doc) que desenha a arte como fundo de pagina."""
+    if not art_bytes:
+        return None
+
+    def draw(canvas, doc):
+        try:
+            reader = ImageReader(BytesIO(art_bytes))
+            iw, ih = reader.getSize()
+            pw, ph = doc.pagesize
+            avail_w = pw - 2 * ART_MARGIN_PT
+            avail_h = ph - 2 * ART_MARGIN_PT
+            if ART_COVER:
+                scale = max(avail_w / iw, avail_h / ih)
+            else:
+                scale = min(avail_w / iw, avail_h / ih)
+            dw, dh = iw * scale, ih * scale
+            x = (pw - dw) / 2
+            y = (ph - dh) / 2
+            canvas.drawImage(reader, x, y, width=dw, height=dh)
+        except Exception:
+            pass
+
+    return draw
 
 
 class QuoteListCreateView(generics.ListCreateAPIView):
@@ -115,7 +167,14 @@ class QuotePDFView(views.APIView):
             map_bytes = render_map(origin_geo, dest_geo, geometry)
 
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.5*cm, bottomMargin=1.5*cm)
+        art_bytes = _decode_art(getattr(settings_obj, 'quote_art', '') or '') if settings_obj else None
+        art_bg = _art_background(art_bytes)
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            topMargin=CONTENT_TOP_PT,
+            bottomMargin=1.5 * cm,
+        )
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle('QuoteTitle', parent=styles['Title'], textColor=colors.HexColor('#111827'), fontSize=20, spaceAfter=4)
         sub_style = ParagraphStyle('QuoteSub', parent=styles['Normal'], textColor=colors.HexColor('#6B7280'), fontSize=10, spaceAfter=2)
@@ -204,7 +263,7 @@ class QuotePDFView(views.APIView):
             elements.append(Spacer(1, 0.6 * cm))
             elements.append(Paragraph(TILE_ATTRIBUTION, sub_style))
 
-        doc.build(elements)
+        doc.build(elements, onFirstPage=art_bg, onLaterPages=art_bg)
         buffer.seek(0)
         safe_name = re.sub(r'[^\w\s-]', '', quote.client_name).strip().replace(' ', '_') or 'orcamento'
         fname = f'orcamento_{safe_name}.pdf'

@@ -12,3 +12,4 @@ dj-database-url>=2.0
 requests>=2.31
 Pillow>=10.0
 staticmap>=0.5.7
+PyMuPDF>=1.24

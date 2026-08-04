@@ -24,4 +24,4 @@ class UserSerializer(serializers.ModelSerializer):
 class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSettings
-        fields = ['gas_price', 'daily_goal', 'monthly_goal', 'phone']
+        fields = ['gas_price', 'daily_goal', 'monthly_goal', 'phone', 'quote_art']

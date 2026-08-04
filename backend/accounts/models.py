@@ -18,6 +18,7 @@ class UserSettings(models.Model):
     daily_goal = models.DecimalField(max_digits=10, default=200, decimal_places=2)
     monthly_goal = models.DecimalField(max_digits=10, default=6000, decimal_places=2)
     phone = models.CharField(max_length=20, null=True, blank=True)
+    quote_art = models.TextField(blank=True, null=True, help_text="Base64 data URL da arte de fundo do PDF de orcamentos (A4 ou PNG/JPG)")
 
     def __str__(self):
         return f'Configs de {self.user.name}'
