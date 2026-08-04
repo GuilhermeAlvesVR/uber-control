@@ -18,6 +18,7 @@ from PIL import Image as PILImage
 ART_COVER = True          # True: a arte cobre a pagina toda (corta excedente). False: ajusta sem cortar.
 ART_MARGIN_PT = 0         # margem extra (pontos) ao redor da arte quando ART_COVER=False
 CONTENT_TOP_PT = 150      # distancia (pontos) do topo onde o conteudo (nome/rotas/valores) comeca a ser impresso
+ART_TEXT_ALPHA = 0.85     # opacidade do painel claro atras do texto para leitura sobre a arte (0=transparente, 1=opaco)
 
 from .models import PrivateQuote
 from .serializers import PrivateQuoteSerializer
@@ -177,9 +178,9 @@ class QuotePDFView(views.APIView):
         )
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle('QuoteTitle', parent=styles['Title'], textColor=colors.HexColor('#111827'), fontSize=20, spaceAfter=4)
-        sub_style = ParagraphStyle('QuoteSub', parent=styles['Normal'], textColor=colors.HexColor('#6B7280'), fontSize=10, spaceAfter=2)
-        label_style = ParagraphStyle('Label', parent=styles['Normal'], textColor=colors.HexColor('#6B7280'), fontSize=9)
-        value_style = ParagraphStyle('Value', parent=styles['Normal'], textColor=colors.HexColor('#111827'), fontSize=12)
+        sub_style = ParagraphStyle('QuoteSub', parent=styles['Normal'], textColor=colors.HexColor('#374151'), fontSize=10, spaceAfter=2, fontName='Helvetica-Bold')
+        label_style = ParagraphStyle('Label', parent=styles['Normal'], textColor=colors.HexColor('#374151'), fontSize=9, fontName='Helvetica-Bold')
+        value_style = ParagraphStyle('Value', parent=styles['Normal'], textColor=colors.HexColor('#000000'), fontSize=14, fontName='Helvetica-Bold')
 
         elements = []
 
@@ -241,8 +242,9 @@ class QuotePDFView(views.APIView):
             rows.append([Paragraph('Observacoes', label_style), Paragraph(quote.notes, value_style)])
 
         info_table = Table(rows, colWidths=[5*cm, 12*cm])
+        panel = colors.Color(1, 1, 1, alpha=ART_TEXT_ALPHA)
         info_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F3F4F6')),
+            ('BACKGROUND', (0, 0), (-1, -1), panel),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#D1D5DB')),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('TOPPADDING', (0, 0), (-1, -1), 8),
@@ -256,8 +258,14 @@ class QuotePDFView(views.APIView):
                   Paragraph(f'{driver_name}{"  -  " + phone if phone else ""}', value_style)]
         if vehicle:
             footer.append(Paragraph(f'{vehicle.model} {vehicle.year} - {vehicle.plate}', sub_style))
-        for item in footer:
-            elements.append(item)
+        footer_table = Table([[item] for item in footer], colWidths=[17 * cm])
+        footer_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), panel),
+            ('TOPPADDING', (0, 0), (-1, -1), 2),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(footer_table)
 
         if map_bytes:
             elements.append(Spacer(1, 0.6 * cm))
