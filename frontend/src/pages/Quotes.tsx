@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Plus, MapPin, Route, Download, Trash2, ClipboardList, Banknote, CreditCard, X, Loader2, Clock } from 'lucide-react';
+import { Plus, MapPin, Route, Download, Trash2, ClipboardList, Banknote, CreditCard, X, Loader2, Clock, Eye, ExternalLink } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { Skeleton, EmptyState, PageHeader } from '../components/ui';
 import type { PrivateQuote } from '../types';
@@ -15,6 +15,8 @@ export default function Quotes() {
   const [saving, setSaving] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [preview, setPreview] = useState<{ distance_km: number; duration_min: number } | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState('');
   const [form, setForm] = useState({
     client_name: '', origin: '', destination: '', distance_km: '',
     price_cash_pix: '', price_card: '', notes: '',
@@ -52,16 +54,45 @@ export default function Quotes() {
   async function downloadPdf(id: number, clientName?: string) {
     try {
       const r = await api.get(`/quotes/${id}/pdf/`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([r.data]));
-      const safeName = (clientName || 'orcamento').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') || 'orcamento';
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `orcamento_${safeName}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      downloadBlob(new Blob([r.data]), clientName);
     } catch { toast('Erro ao baixar o PDF', 'error'); }
+  }
+
+  async function viewPdf(id: number, clientName?: string) {
+    try {
+      const r = await api.get(`/quotes/${id}/pdf/`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([r.data], { type: 'application/pdf' }));
+      setPreviewUrl(url);
+      setPreviewName(clientName || '');
+    } catch { toast('Erro ao abrir o PDF', 'error'); }
+  }
+
+  function downloadBlob(blob: Blob, clientName?: string) {
+    const url = window.URL.createObjectURL(blob);
+    const safeName = (clientName || 'orcamento').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') || 'orcamento';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orcamento_${safeName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  function downloadPdfFromUrl(url: string, clientName?: string) {
+    const a = document.createElement('a');
+    const safeName = (clientName || 'orcamento').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') || 'orcamento';
+    a.href = url;
+    a.download = `orcamento_${safeName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function closePreview() {
+    if (previewUrl) window.URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewName('');
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -86,7 +117,7 @@ export default function Quotes() {
       setForm({ client_name: '', origin: '', destination: '', distance_km: '', price_cash_pix: '', price_card: '', notes: '' });
       setPreview(null);
       load();
-      downloadPdf(r.data.id, r.data.client_name);
+      viewPdf(r.data.id, r.data.client_name);
     } catch {
       toast('Erro ao gerar orcamento. Verifique os enderecos.', 'error');
     }
@@ -168,7 +199,7 @@ export default function Quotes() {
             <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className={inputCls} rows={2} placeholder="Ex: incluir 1 mala, taxa extra..." /></div>
           <div className="flex gap-3">
             <button type="submit" disabled={saving} className="btn-primary flex-1 disabled:opacity-50">
-              {saving ? 'Gerando...' : 'Gerar Orcamento e Baixar PDF'}
+              {saving ? 'Gerando...' : 'Gerar Orcamento'}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">Cancelar</button>
           </div>
@@ -206,6 +237,7 @@ export default function Quotes() {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => viewPdf(q.id, q.client_name)} className="btn-ghost !px-3 !py-2" title="Ver PDF"><Eye size={15} /></button>
                 <button onClick={() => downloadPdf(q.id, q.client_name)} className="btn-ghost !px-3 !py-2" title="Baixar PDF"><Download size={15} /></button>
                 <button onClick={() => handleDelete(q.id)} className="btn-danger !px-3 !py-2" title="Excluir"><Trash2 size={15} /></button>
               </div>
@@ -213,6 +245,22 @@ export default function Quotes() {
           ))}
         </div>
       </div>
+
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-3xl h-[85vh] rounded-2xl overflow-hidden bg-zinc-900 border border-white/10 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 gap-2">
+              <h3 className="text-sm font-medium text-zinc-100 truncate">Orcamento{previewName ? ` - ${previewName}` : ''}</h3>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => downloadPdfFromUrl(previewUrl, previewName)} className="btn-ghost !px-3 !py-2" title="Baixar PDF"><Download size={15} /></button>
+                <button onClick={() => window.open(previewUrl, '_blank')} className="btn-ghost !px-3 !py-2" title="Abrir em nova aba"><ExternalLink size={15} /></button>
+                <button onClick={closePreview} className="btn-ghost !px-3 !py-2" title="Fechar"><X size={18} /></button>
+              </div>
+            </div>
+            <iframe src={previewUrl} title="Visualizar orcamento" className="w-full flex-1 bg-white" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

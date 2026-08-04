@@ -9,6 +9,7 @@ export default function Settings() {
   const [dailyGoal, setDailyGoal] = useState('200');
   const [monthlyGoal, setMonthlyGoal] = useState('6000');
   const [phone, setPhone] = useState('');
+  const [driverName, setDriverName] = useState('');
   const [quoteArt, setQuoteArt] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -18,6 +19,7 @@ export default function Settings() {
       setDailyGoal(r.data.daily_goal?.toString() || '200');
       setMonthlyGoal(r.data.monthly_goal?.toString() || '6000');
       setPhone(r.data.phone || '');
+      setDriverName(r.data.driver_name || '');
       setQuoteArt(r.data.quote_art || '');
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -28,6 +30,7 @@ export default function Settings() {
         daily_goal: parseFloat(dailyGoal),
         monthly_goal: parseFloat(monthlyGoal),
         phone: phone || null,
+        driver_name: driverName || null,
         quote_art: quoteArt || null,
       });
       toast('Configuracoes salvas!');
@@ -73,7 +76,9 @@ export default function Settings() {
 
         <div className="card p-6 space-y-4">
           <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-lg"><Phone size={20} className="text-zinc-950" /></div>
-            <div><p className="text-sm font-medium text-zinc-100">Telefone para contato</p><p className="text-xs text-zinc-500">Aparece no cabecalho do PDF de orcamentos</p></div></div>
+            <div><p className="text-sm font-medium text-zinc-100">Contato do motorista</p><p className="text-xs text-zinc-500">Nome e telefone que aparecem no PDF de orcamentos</p></div></div>
+          <div><label className="text-sm text-zinc-400 mb-1 block">Nome do motorista</label>
+            <input type="text" value={driverName} onChange={e => setDriverName(e.target.value)} className="input" placeholder="Ex: Guilherme" /></div>
           <div className="relative"><span className="absolute left-4 top-3 text-zinc-500"><Phone size={15} /></span>
             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="input !pl-10" placeholder="(11) 99999-9999" /></div>
         </div>

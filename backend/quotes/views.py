@@ -184,7 +184,7 @@ class QuotePDFView(views.APIView):
 
         elements = []
 
-        driver_name = u.name or 'Motorista'
+        driver_name = (getattr(settings_obj, 'driver_name', '') or u.name or 'Motorista')
 
         photo_img = None
         if vehicle and vehicle.photo:
