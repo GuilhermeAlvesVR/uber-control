@@ -263,7 +263,10 @@ class QuotePDFView(views.APIView):
             elements.append(Spacer(1, 0.6 * cm))
             elements.append(Paragraph(TILE_ATTRIBUTION, sub_style))
 
-        doc.build(elements, onFirstPage=art_bg, onLaterPages=art_bg)
+        if art_bg:
+            doc.build(elements, onFirstPage=art_bg, onLaterPages=art_bg)
+        else:
+            doc.build(elements)
         buffer.seek(0)
         safe_name = re.sub(r'[^\w\s-]', '', quote.client_name).strip().replace(' ', '_') or 'orcamento'
         fname = f'orcamento_{safe_name}.pdf'
